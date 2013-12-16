@@ -25,4 +25,17 @@ class ArkenstoneTest < Test::Unit::TestCase
   #       },
   #       message: 'King under the mountain'
   #     }
+  
+  def test_creates_from_params
+    options = {name: 'John Doe', age: 18, gender: 'Male', bearded: true}
+    user = User.new(options)
+    assert(user.class == User)
+    assert(user.attributes == options.merge(id: 1))
+  end
+
+  def test_sends_json_to_url
+  end
+
+  def test_creates_instances_from_json
+  end
 end
