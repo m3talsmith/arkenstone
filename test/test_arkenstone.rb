@@ -59,6 +59,14 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.age == 18, "user's age was not 18")
   end
   
+  def test_creates
+    options = {name: 'John Doe', age: 18, gender: 'Male', bearded: true}
+    user = User.create(options)
+    assert(user.age == 18, "user's age was not 18")
+    assert(user.id == 1, "user doesn't have an id")
+    assert(user.created_at, "created_at is nil")
+    assert(user.updated_at, "updated_at is nil")
+  end
 
   def test_sends_json_to_url
   end

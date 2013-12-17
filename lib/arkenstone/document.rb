@@ -10,7 +10,7 @@ module Arkenstone
     end
 
     module InstanceMethods
-      attr_accessor :arkenstone_json, :arkenstone_attributes
+      attr_accessor :arkenstone_json, :arkenstone_attributes, :id
       def attributes
         @arkenstone_attributes ||= JSON.parse(self.arkenstone_json)
         @arkenstone_attributes
@@ -22,6 +22,12 @@ module Arkenstone
           self.send("#{k}=".to_sym, v) if self.respond_to? k
         end
         self.attributes
+      end
+
+      def save
+        self.id = 1
+        self.timestamp if self.respond_to?(:timestampable)
+        return self
       end
     end
 
@@ -42,6 +48,11 @@ module Arkenstone
         document = self.new
         document.attributes = options
         return document
+      end
+
+      def create(options)
+        document = self.build(options)
+        document.save
       end
     end
   end
