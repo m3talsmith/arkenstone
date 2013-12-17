@@ -8,7 +8,7 @@ class ArkenstoneTest < Test::Unit::TestCase
   #   attributes :name, :age, :gender, :bearded
   # end
   #
-  # user = User.new({name: 'John Doe', age: 18, gender: 'Male', bearded: true}) # curl -x GET 'http://example.com/users'
+  # user = User.create({name: 'John Doe', age: 18, gender: 'Male', bearded: true}) # curl -x GET 'http://example.com/users'
   # user.save # curl -x POST -d name='John Doe' -d 'etc=...' 'http://example.com/users'
   #
   # Returns
@@ -26,12 +26,39 @@ class ArkenstoneTest < Test::Unit::TestCase
   #       message: 'King under the mountain'
   #     }
   
-  def test_creates_from_params
-    options = {name: 'John Doe', age: 18, gender: 'Male', bearded: true}
-    user = User.new(options)
-    assert(user.class == User)
-    assert(user.attributes == options.merge(id: 1))
+  def test_arkenstone_url_set
+    eval %(
+      class ArkenstoneUrlTest
+        include Arkenstone::Document
+        url 'http://example.com'
+      end
+    )
+
+    assert(ArkenstoneUrlTest)
+    assert(ArkenstoneUrlTest.arkenstone_url == 'http://example.com')
   end
+
+  def test_arkenstone_attributes_set
+    eval %(
+      class ArkenstoneAttributesTest
+        include Arkenstone::Document
+        attributes :name, :age
+      end
+    )
+    arkenstone = ArkenstoneAttributesTest.new
+
+    assert(ArkenstoneAttributesTest.arkenstone_attributes == [:name, :age])
+    assert(arkenstone.respond_to?(:name))
+    assert(arkenstone.respond_to?(:age))
+  end
+
+  def test_builds_from_params
+    options = {name: 'John Doe', age: 18, gender: 'Male', bearded: true}
+    user = User.build(options)
+    assert(user.class == User, "user class was not User")
+    assert(user.age == 18, "user's age was not 18")
+  end
+  
 
   def test_sends_json_to_url
   end
