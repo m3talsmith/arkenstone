@@ -13,15 +13,18 @@ module Arkenstone
       attr_accessor :arkenstone_json, :arkenstone_attributes, :id
       def attributes
         @arkenstone_attributes ||= JSON.parse(self.arkenstone_json)
-        @arkenstone_attributes
       end
 
       def attributes=(options)
         self.arkenstone_json = options.to_json
-        options.each do |k,v|
-          self.send("#{k}=".to_sym, v) if self.respond_to? k
+        options.each do |key, value|
+          self.send("#{key}=".to_sym, value) if self.respond_to? key
         end
         self.attributes
+      end
+
+      def to_json
+        self.attributes.to_json
       end
 
       def save
