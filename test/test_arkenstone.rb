@@ -69,12 +69,20 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.updated_at, "updated_at is nil")
   end
 
-  def test_returns_to_json
+  def test_returns_json
     user = User.build(user_options)
     assert(user.to_json, 'user#to_json method does not exist')
     assert(user.arkenstone_json, 'user#arkenstone_json method does not exist')
-    # puts "\n\n#{user.to_json}"
     assert(user.to_json == user.arkenstone_json, 'does not match json')
+  end
+
+  def test_attribute_changes_updates_json
+    user = User.build(user_options)
+    old_json = user.to_json
+    user.bearded = false
+    assert(user.to_json != old_json)
+    assert(user.to_json == user_options.merge(bearded: false).to_json)
+    assert(user.arkenstone_json == user.to_json)
   end
 
   def test_creates_instances_from_json

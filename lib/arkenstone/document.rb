@@ -12,7 +12,12 @@ module Arkenstone
     module InstanceMethods
       attr_accessor :arkenstone_json, :arkenstone_attributes, :id
       def attributes
-        @arkenstone_attributes ||= JSON.parse(self.arkenstone_json)
+        new_hash = {}
+        self.class.arkenstone_attributes.each do |key|
+          new_hash[key.to_sym] = self.send("#{key}")
+        end
+        self.arkenstone_json = new_hash.to_json
+        new_hash
       end
 
       def attributes=(options)
