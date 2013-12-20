@@ -91,11 +91,16 @@ class ArkenstoneTest < Test::Unit::TestCase
 
   def test_finds_instance_by_id
     user_json = user_options.merge({id: 1}).to_json
-    # http://example/users/1
     stub_request(:get, User.arkenstone_url + '1').to_return(body: user_json)
     user = User.find(1)
     assert user 
     assert user.id == 1
+  end
+
+  def test_instance_not_found_is_nil
+    stub_request(:any, User.arkenstone_url + '1').to_return(:body => "", :status => 404)
+    user = User.find 1
+    assert_nil user
   end
 end
 

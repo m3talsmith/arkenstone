@@ -64,11 +64,10 @@ module Arkenstone
       end
 
       def find(id)
-        # create url
-        # call it
         uri = URI.parse User.arkenstone_url + id.to_s
-        response_string = Net::HTTP.get uri
-        self.build JSON.parse response_string
+        response = Net::HTTP.get_response uri
+        return nil unless response.code == '200'
+        self.build JSON.parse response.body
       end
     end
   end
