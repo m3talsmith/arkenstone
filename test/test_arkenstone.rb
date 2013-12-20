@@ -85,7 +85,17 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.arkenstone_json == user.to_json)
   end
 
-  def test_creates_instances_from_json
+#stub_request(:post, "www.example.com").
+#    with(:body => /^.*world$/, :headers => {"Content-Type" => /image\/.+/}).to_return(:body => "abc")
+
+
+  def test_finds_instance_by_id
+    user_json = user_options.merge({id: 1}).to_json
+    # http://example/users/1
+    stub_request(:get, User.arkenstone_url + '1').to_return(body: user_json)
+    user = User.find(1)
+    assert user 
+    assert user.id == 1
   end
 end
 
