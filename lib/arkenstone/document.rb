@@ -33,9 +33,33 @@ module Arkenstone
       end
 
       def save
-        self.id = 1
         self.timestamp if self.respond_to?(:timestampable)
+        response             = self.id ? put_document_data : post_document_data
+        self.arkenstone_json = response.body
+        self.attributes      = JSON.parse(response.body)
         return self
+      end
+
+      def post_document_data
+        uri      = URI.parse(User.arkenstone_url)
+        request  = Net::HTTP::Post.new(uri)
+        request.set_form_data self.attributes
+        response = http_response(uri, request)
+        return response
+      end
+
+      def put_document_data
+        uri = URI.parse("#{User.arkenstone_url}#{id.to_s}")
+        request  = Net::HTTP::Put.new(uri)
+        request.set_form_data self.attributes
+        response = http_response(uri, request)
+        return response
+      end
+
+      def http_response(uri, request)
+        Net::HTTP.start(uri.hostname, uri.port) do |http|
+          http.request(request)
+        end
       end
     end
 
@@ -64,7 +88,7 @@ module Arkenstone
       end
 
       def find(id)
-        uri = URI.parse User.arkenstone_url + id.to_s
+        uri      = URI.parse User.arkenstone_url + id.to_s
         response = Net::HTTP.get_response uri
         return nil unless response.code == '200'
         self.build JSON.parse response.body

@@ -34,14 +34,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.age == 18, "user's age was not 18")
   end
   
-  def test_creates
-    user = User.create(user_options)
-    assert(user.age == 18, "user's age was not 18")
-    assert(user.id == 1, "user doesn't have an id")
-    assert(user.created_at, "created_at is nil")
-    assert(user.updated_at, "updated_at is nil")
-  end
-
   def test_returns_json
     user = User.build(user_options)
     assert(user.to_json, 'user#to_json method does not exist')
@@ -84,6 +76,41 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert((users.select {|user| user.id == 1}).length == 1)
     assert((users.select {|user| user.id == 2}).length == 1)
   end
+
+  def test_save_new_record
+    user = User.build user_options
+    assert(!user.id, 'user has an id')
+
+    stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
+    user.save
+    assert(user.id == 1, 'user does not have an id')
+  end
+
+  def test_save_current_record
+    user = User.build user_options.merge({id: 1, bearded: false})
+    assert(user.bearded != true)
+
+    stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({id: 1, bearded: true}).to_json)
+    user.bearded = true
+    user.save
+
+    assert(user.bearded == true)
+
+    stub_request(:get, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({id: 1, bearded: true}).to_json)
+    user = User.find(user.id)
+    assert(user.bearded == true)
+  end
+
+  def test_creates
+    stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
+
+    user = User.create(user_options)
+    assert(user.age == 18, "user's age was not 18")
+    assert(user.id == 1, "user doesn't have an id")
+    assert(user.created_at, "created_at is nil")
+    assert(user.updated_at, "updated_at is nil")
+  end
+
 end
 
 def user_options
