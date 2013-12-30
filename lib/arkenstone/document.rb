@@ -42,21 +42,19 @@ module Arkenstone
 
       def post_document_data
         uri      = URI.parse(User.arkenstone_url)
-        request  = Net::HTTP::Post.new(uri)
-        request.set_form_data self.attributes
-        response = http_response(uri, request)
+        response = http_response(uri, :post)
         return response
       end
 
       def put_document_data
-        uri = URI.parse("#{User.arkenstone_url}#{id.to_s}")
-        request  = Net::HTTP::Put.new(uri)
-        request.set_form_data self.attributes
-        response = http_response(uri, request)
+        uri      = URI.parse("#{User.arkenstone_url}#{id.to_s}")
+        response = http_response(uri, :put)
         return response
       end
 
-      def http_response(uri, request)
+      def http_response(uri, method=:post)
+        request = eval("Net::HTTP::#{method.capitalize}.new(uri)")
+        request.set_form_data self.attributes
         Net::HTTP.start(uri.hostname, uri.port) do |http|
           http.request(request)
         end
