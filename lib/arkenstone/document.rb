@@ -69,6 +69,14 @@ module Arkenstone
         return nil unless response.code == '200'
         self.build JSON.parse response.body
       end
+
+      def all
+        uri             = URI.parse User.arkenstone_url
+        response        = Net::HTTP.get_response uri
+        parsed_response = JSON.parse response.body
+        documents       = parsed_response.map {|document| self.build document}
+        return documents
+      end
     end
   end
 end

@@ -1,33 +1,6 @@
 require 'spec_helper'
 
 class ArkenstoneTest < Test::Unit::TestCase
-
-  # A Little psuedo coding here:
-  # class User
-  #   include Arkenstone::Document
-  #
-  #   url 'http://example.com/users/'
-  #   attributes :name, :age, :gender, :bearded
-  # end
-  #
-  # user = User.create({name: 'John Doe', age: 18, gender: 'Male', bearded: true}) 
-  # curl -x GET 'http://example.com/users'
-  # user.save # curl -x POST -d name='John Doe' -d 'etc=...' 'http://example.com/users'
-  #
-  # Returns
-  #   header
-  #     status: 200
-  #   body
-  #     {
-  #       user: {
-  #         id: 1,
-  #         name: 'John Doe',
-  #         age: 18,
-  #         gender: 'Male',
-  #         bearded: true
-  #       },
-  #       message: 'King under the mountain'
-  #     }
   
   def test_arkenstone_url_set
     eval %(
@@ -85,10 +58,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.arkenstone_json == user.to_json)
   end
 
-#stub_request(:post, "www.example.com").
-#    with(:body => /^.*world$/, :headers => {"Content-Type" => /image\/.+/}).to_return(:body => "abc")
-
-
   def test_finds_instance_by_id
     user_json = user_options.merge({id: 1}).to_json
     stub_request(:get, User.arkenstone_url + '1').to_return(body: user_json)
@@ -98,9 +67,22 @@ class ArkenstoneTest < Test::Unit::TestCase
   end
 
   def test_instance_not_found_is_nil
-    stub_request(:any, User.arkenstone_url + '1').to_return(:body => "", :status => 404)
+    stub_request(:any, User.arkenstone_url + '1').to_return(body: "", status: 404)
     user = User.find 1
     assert_nil user
+  end
+
+  def test_finds_all_instances
+    users_json = [
+      user_options.merge({id: 1}),
+      user_options.merge({id: 2})
+    ].to_json
+
+    stub_request(:get, User.arkenstone_url).to_return(body: users_json)
+    users = User.all
+    assert(users.length == 2)
+    assert((users.select {|user| user.id == 1}).length == 1)
+    assert((users.select {|user| user.id == 2}).length == 1)
   end
 end
 
