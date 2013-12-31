@@ -115,7 +115,7 @@ class ArkenstoneTest < Test::Unit::TestCase
     user = User.build user_options.merge({id: 1})
     stub_request(:delete, "#{User.arkenstone_url}#{user.id}").to_return(status: 200)
     result = user.destroy
-    assert(result, "delete was not true")
+    assert(result == true, "delete was not true")
   end
 
 end

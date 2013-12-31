@@ -44,19 +44,21 @@ module Arkenstone
         URI.parse "#{User.arkenstone_url}#{id}"
       end
 
+      def class_uri
+        URI.parse User.arkenstone_url
+      end
+
       def post_document_data
-        uri      = URI.parse(User.arkenstone_url)
-        response = http_response(uri, :post)
-        return response
+        http_response class_uri, :post
       end
 
       def put_document_data
-        response = http_response(instance_uri, :put)
-        return response
+        http_response instance_uri, :put
       end
 
       def destroy
-        http_response instance_uri, :delete
+        resp = http_response instance_uri, :delete
+        resp.code == "200"
       end
 
       def http_response(uri, method=:post)
