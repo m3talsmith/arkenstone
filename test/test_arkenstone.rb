@@ -124,6 +124,12 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.name == 'Jack Doe' && user.age == 24)
   end
 
+  def test_update_attribute
+    user = build_user 1
+    user.update_attribute 'name', 'Jack Doe'
+    assert(user.name == 'Jack Doe')
+  end
+
 end
 
 def build_user(id)

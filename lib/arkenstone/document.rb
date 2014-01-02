@@ -41,6 +41,11 @@ module Arkenstone
         return self
       end
 
+      def update_attribute(key, value)
+        hash = { key.to_sym => value }
+        self.update_attributes hash
+      end
+
       def update_attributes(attributes)
         old_attributes = self.attributes
         old_attributes.merge! attributes
