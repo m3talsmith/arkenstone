@@ -111,6 +111,29 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.updated_at, "updated_at is nil")
   end
 
+  def test_destroys
+    user = build_user 1
+    stub_request(:delete, "#{User.arkenstone_url}#{user.id}").to_return(status: 200)
+    result = user.destroy
+    assert(result == true, "delete was not true")
+  end
+
+  def test_update_attributes
+    user = build_user 1
+    user.update_attributes({name: 'Jack Doe', age: 24})
+    assert(user.name == 'Jack Doe' && user.age == 24)
+  end
+
+  def test_update_attribute
+    user = build_user 1
+    user.update_attribute 'name', 'Jack Doe'
+    assert(user.name == 'Jack Doe')
+  end
+
+end
+
+def build_user(id)
+  User.build user_options.merge({id: id})
 end
 
 def user_options

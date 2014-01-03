@@ -11,6 +11,7 @@ module Arkenstone
 
     module InstanceMethods
       attr_accessor :arkenstone_json, :arkenstone_attributes, :id
+
       def attributes
         new_hash = {}
         self.class.arkenstone_attributes.each do |key|
@@ -40,16 +41,36 @@ module Arkenstone
         return self
       end
 
+      def update_attribute(key, value)
+        hash = { key.to_sym => value }
+        self.update_attributes hash
+      end
+
+      def update_attributes(attributes)
+        old_attributes = self.attributes
+        old_attributes.merge! attributes
+        self.attributes = old_attributes
+      end
+
+      def instance_uri
+        URI.parse "#{User.arkenstone_url}#{id}"
+      end
+
+      def class_uri
+        URI.parse User.arkenstone_url
+      end
+
       def post_document_data
-        uri      = URI.parse(User.arkenstone_url)
-        response = http_response(uri, :post)
-        return response
+        http_response class_uri, :post
       end
 
       def put_document_data
-        uri      = URI.parse("#{User.arkenstone_url}#{id.to_s}")
-        response = http_response(uri, :put)
-        return response
+        http_response instance_uri, :put
+      end
+
+      def destroy
+        resp = http_response instance_uri, :delete
+        response_is_success resp
       end
 
       def http_response(uri, method=:post)
@@ -58,6 +79,11 @@ module Arkenstone
         Net::HTTP.start(uri.hostname, uri.port) do |http|
           http.request(request)
         end
+      end
+
+      private
+      def response_is_success(response)
+        response.code == "200"
       end
     end
 
