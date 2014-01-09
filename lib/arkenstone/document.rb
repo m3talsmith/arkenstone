@@ -46,10 +46,11 @@ module Arkenstone
         self.update_attributes hash
       end
 
-      def update_attributes(attributes)
+      def update_attributes(new_attributes)
         old_attributes = self.attributes
-        old_attributes.merge! attributes
+        old_attributes.merge! new_attributes
         self.attributes = old_attributes
+        self.save
       end
 
       def instance_uri
