@@ -145,12 +145,26 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.name == 'Jacked Doe', 'Jack is not Jacked')
   end
 
+  def test_where_by_name
+    user1 = create_user(user_options(name: 'user1'), 1)
+    user2 = create_user(user_options(name: 'user2'), 2)
+    user3 = create_user(user_options(age: 42), 3)
+
+    users = User.where(age: nil)
+    assert users.include(user1), "\nExpected users to include: #{user1}\nGot: #{users}"
+    assert users.include(user2), "\nExpected users to include: #{user2}\nGot: #{users}"
+  end
 end
 
 def build_user(id)
   User.build user_options.merge({id: id})
 end
 
-def user_options
-  {name: 'John Doe', age: 18, gender: 'Male', bearded: true}
+def create_user(options, id)
+  stub_request(:post, User.arkenstone_url).to_return(body: options.merge({id: id}).to_json)
+  User.build(options).save
+end
+
+def user_options(options={})
+  {name: 'John Doe', age: 18, gender: 'Male', bearded: true}.merge!(options)
 end
