@@ -113,14 +113,14 @@ module Arkenstone
       end
 
       def find(id)
-        uri      = URI.parse User.arkenstone_url + id.to_s
+        uri      = URI.parse self.arkenstone_url + id.to_s
         response = Net::HTTP.get_response uri
         return nil unless response.code == '200'
         self.build JSON.parse response.body
       end
 
       def all
-        uri             = URI.parse User.arkenstone_url
+        uri             = URI.parse self.arkenstone_url
         response        = Net::HTTP.get_response uri
         parsed_response = JSON.parse response.body
         documents       = parsed_response.map {|document| self.build document}

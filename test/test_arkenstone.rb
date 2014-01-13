@@ -145,15 +145,15 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.name == 'Jacked Doe', 'Jack is not Jacked')
   end
 
-  def test_where_by_name
-    user1 = create_user(user_options(name: 'user1'), 1)
-    user2 = create_user(user_options(name: 'user2'), 2)
-    user3 = create_user(user_options(age: 42), 3)
+  # def test_where_by_name
+  #   user1 = create_user(user_options(name: 'user1'), 1)
+  #   user2 = create_user(user_options(name: 'user2'), 2)
+  #   user3 = create_user(user_options(age: 42), 3)
 
-    users = User.where(age: nil)
-    assert users.include(user1), "\nExpected users to include: #{user1}\nGot: #{users}"
-    assert users.include(user2), "\nExpected users to include: #{user2}\nGot: #{users}"
-  end
+  #   users = User.where(age: nil)
+  #   assert users.include(user1), "\nExpected users to include: #{user1}\nGot: #{users}"
+  #   assert users.include(user2), "\nExpected users to include: #{user2}\nGot: #{users}"
+  # end
 end
 
 def build_user(id)
