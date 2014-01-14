@@ -77,9 +77,9 @@ module Arkenstone
       def http_response(uri, method=:post)
         request = eval("Net::HTTP::#{method.capitalize}.new(uri)")
         request.set_form_data self.attributes
-        Net::HTTP.start(uri.hostname, uri.port) do |http|
-          http.request(request)
-        end
+        http = Net::HTTP.new(uri.hostname, uri.port)
+        http.use_ssl = true if uri.scheme == 'https'
+        http.request(request)
       end
 
       private
