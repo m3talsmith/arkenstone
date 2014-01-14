@@ -54,11 +54,11 @@ module Arkenstone
       end
 
       def instance_uri
-        URI.parse "#{User.arkenstone_url}#{id}"
+        URI.parse "#{self.class.arkenstone_url}#{id}"
       end
 
       def class_uri
-        URI.parse User.arkenstone_url
+        URI.parse self.class.arkenstone_url
       end
 
       def post_document_data
