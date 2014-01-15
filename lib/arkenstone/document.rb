@@ -76,9 +76,19 @@ module Arkenstone
 
       def http_response(uri, method=:post)
         request = eval("Net::HTTP::#{method.capitalize}.new(uri)")
-        request.set_form_data self.attributes
-        Net::HTTP.start(uri.hostname, uri.port) do |http|
-          http.request(request)
+        set_request_data request
+        http = Net::HTTP.new(uri.hostname, uri.port)
+        http.use_ssl = true if uri.scheme == 'https'
+        http.request(request)
+      end
+
+      def set_request_data(request)
+        case self.class.arkenstone_content_type
+        when :json
+          request.body = self.attributes.to_json
+          request.content_type = 'application/json'
+        else
+          request.set_form_data self.attributes
         end
       end
 
@@ -89,7 +99,7 @@ module Arkenstone
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type
 
       def url(new_url)
         self.arkenstone_url = new_url
@@ -99,6 +109,10 @@ module Arkenstone
         self.arkenstone_attributes = options
         class_eval("attr_accessor :#{options.join(', :')}")
         return self.arkenstone_attributes
+      end
+
+      def content_type(new_content_type)
+        self.arkenstone_content_type = new_content_type
       end
 
       def build(options)

@@ -1,5 +1,9 @@
 require 'spec_helper'
 
+class DummyRequest
+  attr_accessor :body
+end
+
 class ArkenstoneTest < Test::Unit::TestCase
   
   def test_arkenstone_url_set
@@ -128,6 +132,22 @@ class ArkenstoneTest < Test::Unit::TestCase
     user.update_attributes({name: 'Jack Doe', age: 24})
     assert(user.name == 'Jack Doe', 'user#name is not eq Jack Doe')
     assert(user.age == 24, 'user#age is not eq 24')
+  end
+
+  def test_set_request_data
+    user = build_user 1
+    request = Net::HTTP::Post.new 'http://localhost'
+    user.set_request_data request
+    assert(request.content_type == 'application/json')
+    assert(request.body == '{"name":"John Doe","age":18,"gender":"Male","bearded":true}')
+  end
+
+  def test_set_request_data_uses_forms_by_default
+    user = build_user 1
+    User.arkenstone_content_type = nil
+    request = Net::HTTP::Post.new 'http://localhost'
+    user.set_request_data request
+    assert(request.body == 'name=John+Doe&age=18&gender=Male&bearded=true')
   end
 
   def test_update_attribute
