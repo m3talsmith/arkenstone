@@ -165,6 +165,12 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.name == 'Jacked Doe', 'Jack is not Jacked')
   end
 
+  def test_inheritance
+    su = SuperUser.build({ group_name: "some group" })
+    assert(su.attributes == { group_name: "some group" })
+    assert(SuperUser.arkenstone_url == "http://example.com/superusers")
+  end
+
   # def test_where_by_name
   #   user1 = create_user(user_options(name: 'user1'), 1)
   #   user2 = create_user(user_options(name: 'user2'), 2)
