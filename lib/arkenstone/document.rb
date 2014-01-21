@@ -71,16 +71,13 @@ module Arkenstone
 
       def destroy
         resp = http_response instance_uri, :delete
-        response_is_success resp
+        self.class.response_is_success resp
       end
 
       def http_response(uri, method=:post)
         request = eval("Net::HTTP::#{method.capitalize}.new(uri)")
         set_request_data request
-        http = Net::HTTP.new(uri.hostname, uri.port)
-        http.use_ssl = true if uri.scheme == 'https'
-        self.class.call_request_hooks request
-        http.request(request)
+        self.class.send_request uri, request
       end
 
       def set_request_data(request)
@@ -94,9 +91,6 @@ module Arkenstone
       end
 
       private
-      def response_is_success(response)
-        response.code == "200"
-      end
     end
 
     module ClassMethods
@@ -135,13 +129,20 @@ module Arkenstone
       def find(id)
         uri      = URI.parse self.arkenstone_url + id.to_s
         request  = Net::HTTP::Get.new uri
+        response = self.send_request uri, request
+        return nil unless self.response_is_success response
+        self.build JSON.parse response.body
+      end
+
+      def send_request(uri, request)
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true if uri.scheme == 'https'
-        # need to make request here
         self.call_request_hooks request
-        response = http.request request
-        return nil unless response.code == '200'
-        self.build JSON.parse response.body
+        http.request request
+      end
+
+      def response_is_success(response)
+        %w(200 204).include? response.code
       end
 
       def all
@@ -155,7 +156,6 @@ module Arkenstone
       def call_request_hooks(request)
         unless self.arkenstone_hooks.nil?
           self.arkenstone_hooks.each do |hook|
-            puts "BEFORE: #{request}"
             hook.before_request request
           end
         end
