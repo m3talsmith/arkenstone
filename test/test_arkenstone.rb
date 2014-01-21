@@ -171,11 +171,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(SuperUser.arkenstone_url == "http://example.com/superusers")
   end
 
-  def test_constructor
-    u = User.new user_options
-    assert(u.name == 'John Doe')
-  end
-
   # def test_where_by_name
   #   user1 = create_user(user_options(name: 'user1'), 1)
   #   user2 = create_user(user_options(name: 'user2'), 2)

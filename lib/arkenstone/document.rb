@@ -12,10 +12,6 @@ module Arkenstone
     module InstanceMethods
       attr_accessor :arkenstone_json, :arkenstone_attributes, :id
 
-      def initialize(attrs = {})
-        self.attributes = attrs
-      end
-
       def attributes
         new_hash = {}
         self.class.arkenstone_attributes.each do |key|
