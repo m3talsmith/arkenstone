@@ -79,6 +79,7 @@ module Arkenstone
         set_request_data request
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true if uri.scheme == 'https'
+        self.class.call_request_hooks request
         http.request(request)
       end
 
@@ -99,10 +100,15 @@ module Arkenstone
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks
 
       def url(new_url)
         self.arkenstone_url = new_url
+      end
+
+      def add_hook(hook)
+        self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
+        self.arkenstone_hooks << hook
       end
 
       def attributes(*options)
@@ -128,7 +134,12 @@ module Arkenstone
 
       def find(id)
         uri      = URI.parse self.arkenstone_url + id.to_s
-        response = Net::HTTP.get_response uri
+        request  = Net::HTTP::Get.new uri
+        http = Net::HTTP.new(uri.hostname, uri.port)
+        http.use_ssl = true if uri.scheme == 'https'
+        # need to make request here
+        self.call_request_hooks request
+        response = http.request request
         return nil unless response.code == '200'
         self.build JSON.parse response.body
       end
@@ -139,6 +150,15 @@ module Arkenstone
         parsed_response = JSON.parse response.body
         documents       = parsed_response.map {|document| self.build document}
         return documents
+      end
+
+      def call_request_hooks(request)
+        unless self.arkenstone_hooks.nil?
+          self.arkenstone_hooks.each do |hook|
+            puts "BEFORE: #{request}"
+            hook.before_request request
+          end
+        end
       end
     end
   end
