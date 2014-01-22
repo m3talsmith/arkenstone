@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Arkenstone::VERSION
   spec.authors       = ["Michael Christenson II", "Steve Young", "Scott Williams", "Brett Byler"]
   spec.email         = ["mchristenson@revspringinc.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
-  spec.homepage      = ""
+  spec.description   = "An ActiveRecord replacement over REST"
+  spec.summary       = "A drop-in replacement for ActiveRecord that performs CRUD operations over RESTful URLs."
+  spec.homepage      = "https://github.com/RevSpringPhoenix/arkenstone"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
