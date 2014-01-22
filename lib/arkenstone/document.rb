@@ -47,9 +47,9 @@ module Arkenstone
       end
 
       def update_attributes(new_attributes)
-        old_attributes = self.attributes
-        old_attributes.merge! new_attributes
-        self.attributes = old_attributes
+        attrs = self.attributes
+        attrs.merge! new_attributes
+        self.attributes = attrs
         self.save
       end
 
@@ -149,7 +149,8 @@ module Arkenstone
 
       def all
         uri             = URI.parse self.arkenstone_url
-        response        = Net::HTTP.get_response uri
+        request         = Net::HTTP::Get.new uri
+        response        = self.send_request uri, request
         parsed_response = JSON.parse response.body
         documents       = parsed_response.map {|document| self.build document}
         return documents
