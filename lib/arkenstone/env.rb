@@ -7,5 +7,12 @@ module Arkenstone
         self.send("#{key}=".to_sym, value) if self.respond_to? key
       end
     end
+
+    def build_request
+      klass = eval("Net::HTTP::#{@verb.capitalize}")
+      request = klass.new URI(@url)
+      request.body = body unless @body.nil?
+      request
+    end
   end
 end
