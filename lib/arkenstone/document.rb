@@ -138,7 +138,9 @@ module Arkenstone
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true if uri.scheme == 'https'
         self.call_request_hooks request
-        http.request request
+        response = http.request request
+        self.call_response_hooks response
+        response
       end
 
       def response_is_success(response)
@@ -154,11 +156,15 @@ module Arkenstone
       end
 
       def call_request_hooks(request)
-        unless self.arkenstone_hooks.nil?
-          self.arkenstone_hooks.each do |hook|
-            hook.before_request request
-          end
-        end
+        hooks = self.arkenstone_hooks
+        enumerator = Proc.new { |h| h.before_request request }
+        hooks.each(&enumerator) unless hooks.nil?
+      end
+
+      def call_response_hooks(response)
+        enumerator = Proc.new { |h| h.after_complete response }
+        hooks = self.arkenstone_hooks
+        hooks.each(&enumerator) unless hooks.nil?
       end
     end
   end

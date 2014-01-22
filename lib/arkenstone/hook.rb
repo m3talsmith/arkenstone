@@ -3,7 +3,7 @@ module Arkenstone
     def before_request(request)
     end
 
-    def on_complete(response)
+    def after_complete(response)
     end
   end
 end
