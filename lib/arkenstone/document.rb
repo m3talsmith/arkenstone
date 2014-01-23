@@ -47,9 +47,9 @@ module Arkenstone
       end
 
       def update_attributes(new_attributes)
-        old_attributes = self.attributes
-        old_attributes.merge! new_attributes
-        self.attributes = old_attributes
+        attrs = self.attributes
+        attrs.merge! new_attributes
+        self.attributes = attrs
         self.save
       end
 
@@ -71,15 +71,13 @@ module Arkenstone
 
       def destroy
         resp = http_response instance_uri, :delete
-        response_is_success resp
+        self.class.response_is_success resp
       end
 
       def http_response(uri, method=:post)
         request = eval("Net::HTTP::#{method.capitalize}.new(uri)")
         set_request_data request
-        http = Net::HTTP.new(uri.hostname, uri.port)
-        http.use_ssl = true if uri.scheme == 'https'
-        http.request(request)
+        self.class.send_request uri, request
       end
 
       def set_request_data(request)
@@ -93,16 +91,18 @@ module Arkenstone
       end
 
       private
-      def response_is_success(response)
-        response.code == "200"
-      end
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks
 
       def url(new_url)
         self.arkenstone_url = new_url
+      end
+
+      def add_hook(hook)
+        self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
+        self.arkenstone_hooks << hook
       end
 
       def attributes(*options)
@@ -128,17 +128,44 @@ module Arkenstone
 
       def find(id)
         uri      = URI.parse self.arkenstone_url + id.to_s
-        response = Net::HTTP.get_response uri
-        return nil unless response.code == '200'
+        request  = Net::HTTP::Get.new uri
+        response = self.send_request uri, request
+        return nil unless self.response_is_success response
         self.build JSON.parse response.body
+      end
+
+      def send_request(uri, request)
+        http = Net::HTTP.new(uri.hostname, uri.port)
+        http.use_ssl = true if uri.scheme == 'https'
+        self.call_request_hooks request
+        response = http.request request
+        self.call_response_hooks response
+        response
+      end
+
+      def response_is_success(response)
+        %w(200 204).include? response.code
       end
 
       def all
         uri             = URI.parse self.arkenstone_url
-        response        = Net::HTTP.get_response uri
+        request         = Net::HTTP::Get.new uri
+        response        = self.send_request uri, request
         parsed_response = JSON.parse response.body
         documents       = parsed_response.map {|document| self.build document}
         return documents
+      end
+
+      def call_request_hooks(request)
+        hooks = self.arkenstone_hooks
+        enumerator = Proc.new { |h| h.before_request request }
+        hooks.each(&enumerator) unless hooks.nil?
+      end
+
+      def call_response_hooks(response)
+        enumerator = Proc.new { |h| h.after_complete response }
+        hooks = self.arkenstone_hooks
+        hooks.each(&enumerator) unless hooks.nil?
       end
     end
   end
