@@ -18,6 +18,7 @@ module Arkenstone
           request.body = body
         end
       end
+      #binding.pry
       request
     end
 
