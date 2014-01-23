@@ -11,7 +11,13 @@ module Arkenstone
     def build_request
       klass = eval("Net::HTTP::#{@verb.capitalize}")
       request = klass.new URI(@url)
-      request.body = body unless @body.nil?
+      unless @body.nil?
+        if body.class == Proc
+          body[request]
+        else
+          request.body = body
+        end
+      end
       request
     end
   end

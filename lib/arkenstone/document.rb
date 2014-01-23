@@ -53,31 +53,30 @@ module Arkenstone
         self.save
       end
 
-      def instance_uri
-        URI.parse "#{self.class.arkenstone_url}#{id}"
+      def instance_url
+        "#{self.class.arkenstone_url}#{id}"
       end
 
-      def class_uri
-        URI.parse self.class.arkenstone_url
+      def class_url
+        self.class.arkenstone_url
       end
 
       def post_document_data
-        http_response class_uri, :post
+        http_response class_url, :post
       end
 
       def put_document_data
-        http_response instance_uri, :put
+        http_response instance_url, :put
       end
 
       def destroy
-        resp = http_response instance_uri, :delete
+        resp = http_response instance_url, :delete
         self.class.response_is_success resp
       end
 
-      def http_response(uri, method=:post)
-        request = eval("Net::HTTP::#{method.capitalize}.new(uri)")
-        set_request_data request
-        self.class.send_request uri, request
+      def http_response(url, method=:post)
+        data_setter = Proc.new { |req| set_request_data req }
+        self.class.send_request url, method, data_setter
       end
 
       def set_request_data(request)
@@ -127,18 +126,19 @@ module Arkenstone
       end
 
       def find(id)
-        uri      = URI.parse self.arkenstone_url + id.to_s
-        request  = Net::HTTP::Get.new uri
-        response = self.send_request uri, request
+        url      = self.arkenstone_url + id.to_s
+        response = self.send_request url, :get
         return nil unless self.response_is_success response
         self.build JSON.parse response.body
       end
 
-      def send_request(uri, request)
+      def send_request(url, verb, body=nil)
+        uri = URI(url)
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true if uri.scheme == 'https'
-        self.call_request_hooks request
-        response = http.request request
+        env = Arkenstone::Environment.new url: url, verb: verb, body: body
+        self.call_request_hooks env
+        response = http.request env.build_request
         self.call_response_hooks response
         response
       end
@@ -148,9 +148,7 @@ module Arkenstone
       end
 
       def all
-        uri             = URI.parse self.arkenstone_url
-        request         = Net::HTTP::Get.new uri
-        response        = self.send_request uri, request
+        response        = self.send_request self.arkenstone_url, :get
         parsed_response = JSON.parse response.body
         documents       = parsed_response.map {|document| self.build document}
         return documents

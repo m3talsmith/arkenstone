@@ -20,4 +20,10 @@ class ArkenstoneEnvTest < Test::Unit::TestCase
     result = @env.build_request
     assert(result.body == 'hi')
   end
+
+  def test_builds_a_request_with_a_proc
+    @env.body = Proc.new { |req| req.body = 'derp' }
+    result = @env.build_request
+    assert(result.body == 'derp')
+  end
 end
