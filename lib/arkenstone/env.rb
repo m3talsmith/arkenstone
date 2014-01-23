@@ -20,5 +20,9 @@ module Arkenstone
       end
       request
     end
+
+    def to_s
+      "#{@verb} #{@url}\n#{@body}"
+    end
   end
 end

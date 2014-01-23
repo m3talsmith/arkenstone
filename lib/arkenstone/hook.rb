@@ -5,5 +5,8 @@ module Arkenstone
 
     def after_complete(response)
     end
+
+    def encode_attributes(attributes)
+    end
   end
 end

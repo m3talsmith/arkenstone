@@ -81,12 +81,22 @@ module Arkenstone
 
       def set_request_data(request)
         case self.class.arkenstone_content_type
-        when :json
-          request.body = self.attributes.to_json
-          request.content_type = 'application/json'
+        when :form
+          request.set_form_data saveable_attributes
         else
-          request.set_form_data self.attributes
+          request.body = saveable_attributes.to_json
+          request.content_type = 'application/json'
         end
+      end
+
+      def saveable_attributes
+        return self.attributes if self.class.arkenstone_hooks.nil?
+        attrs = {}
+        self.class.arkenstone_hooks.each do |hook|
+          new_attrs = hook.encode_attributes(self.attributes)
+          attrs.merge! new_attrs unless new_attrs.nil?
+        end
+        attrs.empty? ? self.attributes : attrs
       end
 
       private
