@@ -6,6 +6,8 @@ module Arkenstone
       def included(base)
         base.send :include, Arkenstone::Document::InstanceMethods
         base.extend Arkenstone::Document::ClassMethods
+        base.send :include, Arkenstone::Associations::InstanceMethods
+        base.extend Arkenstone::Associations::ClassMethods
       end
     end
 
@@ -130,6 +132,14 @@ module Arkenstone
         return document
       end
 
+      def parse_all(json)
+        if json.nil? or json.empty?
+          return [] 
+        end
+        tree = JSON.parse json
+        tree.map {|document| self.build document}
+      end
+
       def create(options)
         document = self.build(options)
         document.save
@@ -160,8 +170,7 @@ module Arkenstone
 
       def all
         response        = self.send_request self.arkenstone_url, :get
-        parsed_response = JSON.parse response.body
-        documents       = parsed_response.map {|document| self.build document}
+        documents       = parse_all response.body
         return documents
       end
 

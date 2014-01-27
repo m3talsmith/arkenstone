@@ -189,6 +189,17 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(hook.called == true)
   end
 
+  def test_parse_all_builds_array
+    json = '[{ "id": 100, "name": "test" }, { "id": 200, "name": "built" }]'
+    result = User.parse_all json
+    assert(result.count == 2)
+  end
+
+  def test_parse_all_catches_empty_json
+    result = User.parse_all ''
+    assert(result == [])
+  end
+
   # def test_where_by_name
   #   user1 = create_user(user_options(name: 'user1'), 1)
   #   user2 = create_user(user_options(name: 'user2'), 2)
