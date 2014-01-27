@@ -4,13 +4,12 @@ class AssociationsTest < Test::Unit::TestCase
   def setup
     @model = AssociatedUser.new
     @model.id = 100
-    # stub requests
-  end
-
-  def test_has_many_creates_child_array
     json = '[{ "id": 100, "name": "test" }, { "id": 200, "name": "dummy data" }]'
     stub_request(:get, "#{AssociatedUser.arkenstone_url}100/things").to_return(body: json)
     stub_request(:get, "#{AssociatedUser.arkenstone_url}100/roles").to_return(body: '')
+  end
+
+  def test_has_many_creates_child_array
     assert(AssociatedUser.method_defined? :things)
     assert(@model.things.nil? == false)
     assert(@model.things != [])
@@ -19,9 +18,10 @@ class AssociationsTest < Test::Unit::TestCase
     assert(@model.roles == [])
   end
 
-  #def test_has_many_creates_cached_method
-    #assert(AssociatedUser.method_defined? :cached_things)
-  #end
+  def test_has_many_creates_cached_method
+    assert(AssociatedUser.method_defined? :cached_things)
+    assert(@model.cached_things.count == 2)
+  end
 
   #def test_has_many_creates_add_child
     #assert(AssociatedUser.method_defined? :add_thing)

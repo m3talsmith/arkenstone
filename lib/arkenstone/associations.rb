@@ -15,14 +15,20 @@ module Arkenstone
           @association_data[child_model_name] = fetch_children child_model_name
           @association_data[child_model_name]
         end
+        cached_child_name = "cached_#{child_model_name}"
+        define_method(cached_child_name) do
+          @association_data = {} if @association_data.nil?
+          if @association_data[child_model_name].nil?
+            @association_data[child_model_name] = fetch_children child_model_name
+          end
+          @association_data[child_model_name]
+        end
       end
 
     end
 
     module InstanceMethods
       def fetch_children(child_model_name)
-        # GET parent_name/:id/child_names
-        # child model == Thing
         url = build_nested_url child_model_name
         response = self.class.send_request url, :get
         klass_name = child_model_name.to_s.classify
