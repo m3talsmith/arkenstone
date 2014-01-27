@@ -136,18 +136,19 @@ class ArkenstoneTest < Test::Unit::TestCase
 
   def test_set_request_data
     user = build_user 1
+    User.arkenstone_content_type = :form
     request = Net::HTTP::Post.new 'http://localhost'
     user.set_request_data request
-    assert(request.content_type == 'application/json')
-    assert(request.body == '{"name":"John Doe","age":18,"gender":"Male","bearded":true}')
+    assert(request.body == 'name=John+Doe&age=18&gender=Male&bearded=true')
   end
 
-  def test_set_request_data_uses_forms_by_default
+  def test_set_request_data_uses_json_by_default
     user = build_user 1
     User.arkenstone_content_type = nil
     request = Net::HTTP::Post.new 'http://localhost'
     user.set_request_data request
-    assert(request.body == 'name=John+Doe&age=18&gender=Male&bearded=true')
+    assert(request.content_type == 'application/json')
+    assert(request.body == '{"name":"John Doe","age":18,"gender":"Male","bearded":true}')
   end
 
   def test_update_attribute
@@ -169,6 +170,34 @@ class ArkenstoneTest < Test::Unit::TestCase
     su = SuperUser.build({ group_name: "some group" })
     assert(su.attributes == { group_name: "some group" })
     assert(SuperUser.arkenstone_url == "http://example.com/superusers")
+  end
+
+  def test_save_attributes
+    eval %(
+      class ArkenstoneAttrHook < Arkenstone::Hook
+        attr_accessor :called
+        def encode_attributes(attrs)
+          @called = true
+          attrs
+        end
+      end
+    )
+    hook = ArkenstoneAttrHook.new
+    User.add_hook hook
+    u = User.new
+    u.saveable_attributes
+    assert(hook.called == true)
+  end
+
+  def test_parse_all_builds_array
+    json = '[{ "id": 100, "name": "test" }, { "id": 200, "name": "built" }]'
+    result = User.parse_all json
+    assert(result.count == 2)
+  end
+
+  def test_parse_all_catches_empty_json
+    result = User.parse_all ''
+    assert(result == [])
   end
 
   # def test_where_by_name
