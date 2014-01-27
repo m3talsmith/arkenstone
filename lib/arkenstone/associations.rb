@@ -10,11 +10,6 @@ module Arkenstone
     
     module ClassMethods
       def has_many(child_model_name)
-        define_method(child_model_name) do # back in the instance scope
-          @association_data = {} if @association_data.nil?
-          @association_data[child_model_name] = fetch_children child_model_name
-          @association_data[child_model_name]
-        end
         cached_child_name = "cached_#{child_model_name}"
         define_method(cached_child_name) do
           @association_data = {} if @association_data.nil?
@@ -22,6 +17,21 @@ module Arkenstone
             @association_data[child_model_name] = fetch_children child_model_name
           end
           @association_data[child_model_name]
+        end
+
+        define_method(child_model_name) do # back in the instance scope
+          @association_data = {} if @association_data.nil?
+          @association_data[child_model_name] = nil
+          self.send cached_child_name.to_sym
+        end
+
+        singular = child_model_name.to_s.singularize
+        add_child_method_name = "add_#{singular}"
+        define_method(add_child_method_name) do |new_child|
+          @association_data = {} if @association_data.nil?
+          self.add_child child_model_name, new_child.id
+          @association_data[child_model_name] = nil
+          self.send cached_child_name.to_sym
         end
       end
 
@@ -34,6 +44,12 @@ module Arkenstone
         klass_name = child_model_name.to_s.classify
         klass = Kernel.const_get klass_name
         klass.parse_all response.body
+      end
+
+      def add_child(child_model_name, child_id)
+        url = build_nested_url child_model_name
+        body = {id: child_id}.to_json
+        self.class.send_request url, :post, body
       end
 
       private

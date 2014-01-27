@@ -152,6 +152,7 @@ module Arkenstone
         self.build JSON.parse response.body
       end
 
+      # body is a string or a Proc that returns a string
       def send_request(url, verb, body=nil)
         uri = URI(url)
         http = Net::HTTP.new(uri.hostname, uri.port)
