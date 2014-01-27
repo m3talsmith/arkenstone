@@ -2,12 +2,6 @@ require 'active_support/inflector'
 
 module Arkenstone
   module Associations
-    # has_many :children creates the following methods on instances of the class
-    # children() -- which always fetches from the server
-    # children_cached() -- which returns what was last fetched from the server
-    # add_child(child) -- adds on the server. child is either an object or id
-    # remove_child(child) -- removes from the server. child is either an object or id
-    
     module ClassMethods
       def has_many(child_model_name)
         cached_child_name = "cached_#{child_model_name}"
@@ -33,6 +27,14 @@ module Arkenstone
           @association_data[child_model_name] = nil
           self.send cached_child_name.to_sym
         end
+
+        remove_child_method_name = "remove_#{singular}"
+        define_method(remove_child_method_name) do |child_to_remove|
+          @association_data = {} if @association_data.nil?
+          self.remove_child child_model_name, child_to_remove.id
+          @association_data[child_model_name] = nil
+          self.send cached_child_name.to_sym
+        end
       end
 
     end
@@ -50,6 +52,11 @@ module Arkenstone
         url = build_nested_url child_model_name
         body = {id: child_id}.to_json
         self.class.send_request url, :post, body
+      end
+
+      def remove_child(child_model_name, child_id)
+        url = build_nested_url child_model_name, child_id
+        self.class.send_request url, :delete
       end
 
       private

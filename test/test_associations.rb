@@ -40,7 +40,17 @@ class AssociationsTest < Test::Unit::TestCase
     assert(@model.cached_things.count == 3)
   end
 
-  #def test_has_many_creates_remove_child
-    #assert(AssociatedUser.method_defined? :remove_thing)
-  #end
+  def test_has_many_creates_remove_child
+    stub_request(:delete, "#{AssociatedUser.arkenstone_url}100/things/100").to_return do |req|
+      @dummy_things = [{"id" => 200, "name" => "dummy data"}]
+      { code: 200 }
+    end
+    
+    assert(AssociatedUser.method_defined? :remove_thing)
+    bad_thing = Thing.new
+    bad_thing.id = 100
+    @model.remove_thing bad_thing
+    assert(@model.cached_things.count == 1)
+    assert(@model.cached_things[0].id == 200)
+  end
 end
