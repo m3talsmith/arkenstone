@@ -8,7 +8,7 @@ module Arkenstone
         end
       end
 
-      def has_many(child_model_name)
+      def setup_arkenstone_data
         # All association data is stored in a hash (@arkenstone_data) on the instance of the class.
 
         # Create a cached collection for the association. Only use this if you're absolutely 100% sure that you don't need to get up to date data.
@@ -21,6 +21,11 @@ module Arkenstone
         define_method('wipe_arkenstone_cache') do |model_name|
           arkenstone_data[model_name] = nil
         end
+
+      end
+
+      def has_many(child_model_name)
+        setup_arkenstone_data
 
         # The method for accessing the cached data is `cached_[name]`. If the cache is empty it creates a request to repopulate it from the server.
         cached_child_name = "cached_#{child_model_name}"
@@ -57,22 +62,36 @@ module Arkenstone
       end
 
       def has_one(child_model_name)
+        setup_arkenstone_data
 
+        # The method for accessing the cached single resource is `cached_[name]`. If the value is nil it creates a request to pull the value from the server.
         cached_child_name = "cached_#{child_model_name}"
         define_method(cached_child_name) do
-          @arkenstone_data = {} if @arkenstone_data.nil?
-          cache = @arkenstone_data
+          cache = arkenstone_data
           if cache[child_model_name].nil?
             cache[child_model_name] = fetch_child child_model_name
           end
           cache[child_model_name]
         end
 
+        # The uncached version is retrieved by wiping the cache for the association, and then re-getting it.
         define_method(child_model_name) do
-          @arkenstone_data = {} if @arkenstone_data.nil?
-          cache = @arkenstone_data
-          cache[child_model_name] = nil
+          arkenstone_data[child_model_name] = nil
           self.send cached_child_name
+        end
+
+        # A single association is updated or removed with a setter method.
+        setter_method_name = "#{child_model_name}="
+        define_method(setter_method_name) do |new_value|
+          if new_value.nil?
+            old_model = self.send child_model_name.to_sym
+            self.remove_child child_model_name, old_model.id
+            self.wipe_arkenstone_cache child_model_name
+          else
+            self.add_child child_model_name, new_value.id
+            self.wipe_arkenstone_cache child_model_name
+            self.send cached_child_name.to_sym
+          end
         end
 
       end
@@ -88,6 +107,7 @@ module Arkenstone
 
       def fetch_child(child_model_name)
         fetch_nested_resource child_model_name do |klass, response_body|
+          return nil if response_body.nil? or response_body.empty?
           klass.build JSON.parse(response_body)
         end
       end
