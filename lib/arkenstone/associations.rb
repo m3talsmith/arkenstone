@@ -4,35 +4,49 @@ module Arkenstone
   module Associations
     module ClassMethods
       def has_many(child_model_name)
-        cached_child_name = "cached_#{child_model_name}"
-        define_method(cached_child_name) do
-          @association_data = {} if @association_data.nil?
-          if @association_data[child_model_name].nil?
-            @association_data[child_model_name] = fetch_children child_model_name
-          end
-          @association_data[child_model_name]
+        # All association data is stored in a hash (@arkenstone_data) on the instance of the class.
+
+        # Create a cached collection for the association. Only use this if you're absolutely 100% sure that you don't need to get up to date data.
+        define_method('arkenstone_data') do
+          @arkenstone_data = {} if @arkenstone_data.nil?
+          @arkenstone_data
         end
 
-        define_method(child_model_name) do # back in the instance scope
-          @association_data = {} if @association_data.nil?
-          @association_data[child_model_name] = nil
+        # Clears a cache for a model
+        define_method('wipe_arkenstone_cache') do |model_name|
+          arkenstone_data[model_name] = nil
+        end
+
+        # The method for accessing the cached data is `cached_[name]`. If the cache is empty it creates a request to repopulate it from the server.
+        cached_child_name = "cached_#{child_model_name}"
+        define_method(cached_child_name) do
+          cache = arkenstone_data
+          if cache[child_model_name].nil?
+            cache[child_model_name] = fetch_children child_model_name
+          end
+          cache[child_model_name]
+        end
+
+        # The uncached version is the name supplied to has_many. It wipes the cache for the association and refetches it.
+        define_method(child_model_name) do 
+          self.wipe_arkenstone_cache child_model_name
           self.send cached_child_name.to_sym
         end
 
+        # Add a model to the association with add_[child_model_name]. It performs two network calls, one to add it, then another to refetch the association.
         singular = child_model_name.to_s.singularize
         add_child_method_name = "add_#{singular}"
         define_method(add_child_method_name) do |new_child|
-          @association_data = {} if @association_data.nil?
           self.add_child child_model_name, new_child.id
-          @association_data[child_model_name] = nil
+          self.wipe_arkenstone_cache child_model_name
           self.send cached_child_name.to_sym
         end
 
+        # Remove a model from the association with remove_[child_model_name]. It performs two network calls, one to add it, then another to refetch the association.
         remove_child_method_name = "remove_#{singular}"
         define_method(remove_child_method_name) do |child_to_remove|
-          @association_data = {} if @association_data.nil?
           self.remove_child child_model_name, child_to_remove.id
-          @association_data[child_model_name] = nil
+          self.wipe_arkenstone_cache child_model_name
           self.send cached_child_name.to_sym
         end
       end
