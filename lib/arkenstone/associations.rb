@@ -3,6 +3,11 @@ require 'active_support/inflector'
 module Arkenstone
   module Associations
     module ClassMethods
+      class << self
+        def extended(base)
+        end
+      end
+
       def has_many(child_model_name)
         # All association data is stored in a hash (@arkenstone_data) on the instance of the class.
 
@@ -51,15 +56,40 @@ module Arkenstone
         end
       end
 
+      def has_one(child_model_name)
+
+        cached_child_name = "cached_#{child_model_name}"
+        define_method(cached_child_name) do
+          @arkenstone_data = {} if @arkenstone_data.nil?
+          cache = @arkenstone_data
+          if cache[child_model_name].nil?
+            cache[child_model_name] = fetch_child child_model_name
+          end
+          cache[child_model_name]
+        end
+
+        define_method(child_model_name) do
+          @arkenstone_data = {} if @arkenstone_data.nil?
+          cache = @arkenstone_data
+          cache[child_model_name] = nil
+          self.send cached_child_name
+        end
+
+      end
     end
+
 
     module InstanceMethods
       def fetch_children(child_model_name)
-        url = build_nested_url child_model_name
-        response = self.class.send_request url, :get
-        klass_name = child_model_name.to_s.classify
-        klass = Kernel.const_get klass_name
-        klass.parse_all response.body
+        fetch_nested_resource child_model_name do |klass, response_body|
+          klass.parse_all response_body
+        end
+      end
+
+      def fetch_child(child_model_name)
+        fetch_nested_resource child_model_name do |klass, response_body|
+          klass.build JSON.parse(response_body)
+        end
       end
 
       def add_child(child_model_name, child_id)
@@ -74,6 +104,15 @@ module Arkenstone
       end
 
       private
+      def fetch_nested_resource(nested_resource_name, &parser)
+        url = build_nested_url nested_resource_name
+        response = self.class.send_request url, :get
+        klass_name = nested_resource_name.to_s.classify
+        klass = Kernel.const_get klass_name
+        parser[klass, response.body]
+      end
+
+
       def build_nested_url(child_name, child_id = nil)
         url = "#{self.instance_url}/#{child_name}"
         url += "/#{child_id}" unless child_id.nil?

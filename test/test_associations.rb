@@ -11,6 +11,9 @@ class AssociationsTest < Test::Unit::TestCase
     end
 
     stub_request(:get, "#{AssociatedUser.arkenstone_url}100/roles").to_return(body: '')
+
+    dummy_resource = {"id" => 50, "name" => "Resource 1"}
+    stub_request(:get, "#{AssociatedUser.arkenstone_url}100/resource").to_return(body: dummy_resource.to_json)
   end
 
   def test_has_many_creates_child_array
@@ -52,5 +55,15 @@ class AssociationsTest < Test::Unit::TestCase
     @model.remove_thing bad_thing
     assert(@model.cached_things.count == 1)
     assert(@model.cached_things[0].id == 200)
+  end
+
+  def test_has_one_creates_a_cached_object
+    assert(AssociatedUser.method_defined? 'cached_resource')
+    assert(@model.cached_resource != nil)
+  end
+
+  def test_has_one_creates_a_uncached_object
+    assert(AssociatedUser.method_defined? 'resource')
+    assert(@model.resource.id = 50)
   end
 end
