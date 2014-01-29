@@ -129,7 +129,8 @@ class ArkenstoneTest < Test::Unit::TestCase
 
     stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({id: 1, name: 'Jack Doe', age: 24}).to_json)
 
-    user.update_attributes({name: 'Jack Doe', age: 24})
+    result = user.update_attributes({name: 'Jack Doe', age: 24})
+    assert(result != false)
     assert(user.name == 'Jack Doe', 'user#name is not eq Jack Doe')
     assert(user.age == 24, 'user#age is not eq 24')
   end
@@ -146,7 +147,8 @@ class ArkenstoneTest < Test::Unit::TestCase
     )
     model = ArkenstoneTestVal.new
     model.first_name = "old"
-    model.update_attributes({first_name: nil})
+    result = model.update_attributes({first_name: nil})
+    assert(result == false)
     assert(model.first_name == "old")
   end
 

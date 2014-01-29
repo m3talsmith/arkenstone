@@ -58,6 +58,7 @@ module Arkenstone
             self.save
           else
             self.attributes = original_attrs
+            false
           end
         else
           self.save
