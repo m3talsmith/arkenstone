@@ -170,7 +170,6 @@ module Arkenstone
         self.call_request_hooks env
         response = http.request env.build_request
         self.call_response_hooks response
-        #binding.pry
         response
       end
 
