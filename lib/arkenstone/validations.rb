@@ -23,6 +23,7 @@ module Arkenstone
         validate_with_custom_validators
       end
 
+      private
       # TODO - account for custom messages 
       def validate_presence(attr, test, message = "can't be blank")
         method_not_defined = test != self.class.method_defined?(attr)
@@ -44,7 +45,6 @@ module Arkenstone
         end
       end
 
-      private
       def validate_with_custom_validators
         unless self.class.custom_validators.nil?
           self.class.custom_validators.each do |custom_validator|

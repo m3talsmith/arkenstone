@@ -11,6 +11,10 @@ module Arkenstone
         @messages.count
       end
 
+      def [](key)
+        @messages[key]
+      end
+
       def []=(key, val)
         @messages[key] = val
       end

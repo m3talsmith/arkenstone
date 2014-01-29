@@ -2,9 +2,6 @@ require 'spec_helper'
 
 class ArkenstoneValidationTest < Test::Unit::TestCase
   def setup
-  end
-
-  def test_model_validate_presence
     eval %(
       class ArkenstoneTestFirstName
         include Arkenstone::Validation
@@ -13,6 +10,9 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
         validates :first_name, presence: true
       end
     )
+  end
+
+  def test_model_validate_presence
     model = ArkenstoneTestFirstName.new
     model.first_name = nil
     assert(model.valid? == false)
@@ -53,5 +53,13 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.valid? == false)
     model.number = 19
     assert(model.valid?)
+  end
+
+  def test_validation_errors
+    model = ArkenstoneTestFirstName.new
+    model.first_name = nil
+    model.valid?
+    assert(model.errors.nil? == false)
+    assert(model.errors[:first_name] == ["can't be blank"])
   end
 end
