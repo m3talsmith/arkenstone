@@ -49,10 +49,20 @@ module Arkenstone
       end
 
       def update_attributes(new_attributes)
+        original_attrs = self.attributes.clone
         attrs = self.attributes
         attrs.merge! new_attributes
         self.attributes = attrs
-        self.save
+        if self.class.method_defined? :valid?
+          if self.valid?
+            self.save
+          else
+            self.attributes = original_attrs
+            false
+          end
+        else
+          self.save
+        end
       end
 
       def instance_url
@@ -161,7 +171,6 @@ module Arkenstone
         self.call_request_hooks env
         response = http.request env.build_request
         self.call_response_hooks response
-        #binding.pry
         response
       end
 

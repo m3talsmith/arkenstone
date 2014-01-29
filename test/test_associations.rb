@@ -11,6 +11,16 @@ class AssociationsTest < Test::Unit::TestCase
     end
 
     stub_request(:get, "#{AssociatedUser.arkenstone_url}100/roles").to_return(body: '')
+
+    @dummy_resource = {"id" => 50, "name" => "Resource 1"}
+    stub_request(:get, "#{AssociatedUser.arkenstone_url}100/resource").to_return do |req|
+      if @dummy_resource.nil?
+        { code: 200 }
+      else
+        { body: @dummy_resource.to_json }
+      end
+    end
+
   end
 
   def test_has_many_creates_child_array
@@ -52,5 +62,57 @@ class AssociationsTest < Test::Unit::TestCase
     @model.remove_thing bad_thing
     assert(@model.cached_things.count == 1)
     assert(@model.cached_things[0].id == 200)
+  end
+
+  def test_has_one_creates_a_cached_object
+    assert(AssociatedUser.method_defined? 'cached_resource')
+    assert(@model.cached_resource != nil)
+  end
+
+  def test_has_one_creates_a_uncached_object
+    assert(AssociatedUser.method_defined? 'resource')
+    assert(@model.resource.id == 50)
+  end
+
+  def test_has_one_creates_a_setter
+    new_values = { id: 75, name: "new resource" }
+    stub_request(:post, "#{AssociatedUser.arkenstone_url}100/resource").to_return(body: '')
+
+    assert(AssociatedUser.method_defined? 'resource=')
+    new_resource = Resource.build new_values
+    @model.resource = new_resource
+    @dummy_resource = new_resource
+    assert(@model.resource.id == 75)
+  end
+
+  def test_has_one_can_delete_an_association
+    stub_request(:delete, "#{AssociatedUser.arkenstone_url}100/resource/50").to_return(code: 200)
+    @model.resource = nil
+    @dummy_resource = nil
+    assert(@model.resource == nil)
+  end
+
+  def test_associations_uses_the_same_namespace
+    eval %(
+      module Foo
+        class Bar
+          include Arkenstone::Document
+        end
+
+        class MyClass
+          include Arkenstone::Document
+          url "http://example.com/myclasses/"
+
+          attributes :id, :name
+
+          has_many :bars
+        end
+      end
+    )
+    stub_request(:get, "#{Foo::MyClass.arkenstone_url}100/bars").to_return(body: '')
+    model = Foo::MyClass.new
+    model.id = 100
+    result = model.bars
+    assert(result != nil)
   end
 end

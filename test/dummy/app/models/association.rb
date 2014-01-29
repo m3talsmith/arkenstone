@@ -14,10 +14,17 @@ class Role
   attributes :id, :name
 end
 
+class Resource
+  include Arkenstone::Document
+  include Arkenstone::Timestamps
+  attributes :id, :name
+end
+
 class AssociatedUser < User
   url 'http://example.com/associated_users/'
 
   has_many :things
   has_many :roles
+  has_one :resource
 
 end

@@ -1,0 +1,71 @@
+require 'spec_helper'
+
+class ArkenstoneValidationTest < Test::Unit::TestCase
+  def setup
+    eval %(
+      class ArkenstoneTestFirstName
+        include Arkenstone::Validation
+
+        attr_accessor :first_name
+        validates :first_name, presence: true
+      end
+    )
+  end
+
+  def test_model_validate_presence
+    model = ArkenstoneTestFirstName.new
+    model.first_name = nil
+    assert(model.valid? == false)
+    model.first_name = "test"
+    assert(model.valid?)
+  end
+
+  def test_model_validate_presence_empty_string
+    model = ArkenstoneTestFirstName.new
+    model.first_name = ""
+    assert(model.valid? == false)
+  end
+
+  def test_model_validate_format
+    eval %(
+      class ArkenstoneTestLastName
+        include Arkenstone::Validation
+
+        attr_accessor :last_name
+        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }      end
+    )
+    model = ArkenstoneTestLastName.new
+    model.last_name = "ABC"
+    assert(model.valid? == false)
+    model.last_name = "abc"
+    assert(model.valid?)
+  end
+
+  def test_model_custom_validator
+    eval %(
+      class ArkenstoneTestCustom
+        include Arkenstone::Validation
+
+        attr_accessor :number
+        validate :numberwang
+
+        def numberwang # http://www.youtube.com/watch?v=qjOZtWZ56lc
+          errors.add(:number, "That's numberwang!") unless [3, 19, 333].include? @number
+        end
+      end
+    )
+    model = ArkenstoneTestCustom.new
+    model.number = 100
+    assert(model.valid? == false)
+    model.number = 19
+    assert(model.valid?)
+  end
+
+  def test_validation_errors
+    model = ArkenstoneTestFirstName.new
+    model.first_name = nil
+    model.valid?
+    assert(model.errors.nil? == false)
+    assert(model.errors[:first_name] == ["can't be blank"])
+  end
+end

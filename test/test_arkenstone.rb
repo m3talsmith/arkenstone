@@ -129,9 +129,27 @@ class ArkenstoneTest < Test::Unit::TestCase
 
     stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({id: 1, name: 'Jack Doe', age: 24}).to_json)
 
-    user.update_attributes({name: 'Jack Doe', age: 24})
+    result = user.update_attributes({name: 'Jack Doe', age: 24})
+    assert(result != false)
     assert(user.name == 'Jack Doe', 'user#name is not eq Jack Doe')
     assert(user.age == 24, 'user#age is not eq 24')
+  end
+
+  def test_update_attributes_with_validation
+    eval %(
+      class ArkenstoneTestVal
+        include Arkenstone::Document
+        include Arkenstone::Validation
+
+        attributes :first_name
+        validates :first_name, presence: true
+      end
+    )
+    model = ArkenstoneTestVal.new
+    model.first_name = "old"
+    result = model.update_attributes({first_name: nil})
+    assert(result == false)
+    assert(model.first_name == "old")
   end
 
   def test_set_request_data
