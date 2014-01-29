@@ -30,9 +30,14 @@ module Arkenstone
         if method_not_defined
           message
         else
-          value_is_nil = test == self.send(attr).nil?
+          val = self.send(attr)
+          value_is_nil = test == val.nil?
           if value_is_nil
-            message
+            return message
+          end
+          value_is_string = val.class == String
+          if value_is_string and val.empty?
+            return message
           end
         end
       end

@@ -20,6 +20,12 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.valid?)
   end
 
+  def test_model_validate_presence_empty_string
+    model = ArkenstoneTestFirstName.new
+    model.first_name = ""
+    assert(model.valid? == false)
+  end
+
   def test_model_validate_format
     eval %(
       class ArkenstoneTestLastName
