@@ -128,10 +128,16 @@ module Arkenstone
         url = build_nested_url nested_resource_name
         response = self.class.send_request url, :get
         klass_name = nested_resource_name.to_s.classify
-        klass = Kernel.const_get klass_name
+        klass_name = prefix_with_class_module klass_name
+        klass = Kernel.const_get klass_name 
         parser[klass, response.body]
       end
 
+      def prefix_with_class_module(klass)
+        mod = self.class.name.deconstantize
+        klass = "#{mod}::#{klass}" unless mod.empty?
+        klass
+      end
 
       def build_nested_url(child_name, child_id = nil)
         url = "#{self.instance_url}/#{child_name}"

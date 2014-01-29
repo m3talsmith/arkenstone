@@ -91,4 +91,28 @@ class AssociationsTest < Test::Unit::TestCase
     @dummy_resource = nil
     assert(@model.resource == nil)
   end
+
+  def test_associations_uses_the_same_namespace
+    eval %(
+      module Foo
+        class Bar
+          include Arkenstone::Document
+        end
+
+        class MyClass
+          include Arkenstone::Document
+          url "http://example.com/myclasses/"
+
+          attributes :id, :name
+
+          has_many :bars
+        end
+      end
+    )
+    stub_request(:get, "#{Foo::MyClass.arkenstone_url}100/bars").to_return(body: '')
+    model = Foo::MyClass.new
+    model.id = 100
+    result = model.bars
+    assert(result != nil)
+  end
 end
