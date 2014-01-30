@@ -156,7 +156,7 @@ class ArkenstoneTest < Test::Unit::TestCase
     user = build_user 1
     User.arkenstone_content_type = :form
     request = Net::HTTP::Post.new 'http://localhost'
-    user.set_request_data request
+    User.set_request_data request, user.attributes
     assert(request.body == 'name=John+Doe&age=18&gender=Male&bearded=true')
   end
 
@@ -164,9 +164,16 @@ class ArkenstoneTest < Test::Unit::TestCase
     user = build_user 1
     User.arkenstone_content_type = nil
     request = Net::HTTP::Post.new 'http://localhost'
-    user.set_request_data request
+    User.set_request_data request, user.attributes
     assert(request.content_type == 'application/json')
     assert(request.body == '{"name":"John Doe","age":18,"gender":"Male","bearded":true}')
+  end
+
+  def test_set_request_data_double_json
+    User.arkenstone_content_type = :json
+    request = Net::HTTP::Post.new 'http://localhost'
+    User.set_request_data request, {name: "test"}.to_json
+    assert(request.body == '{"name":"test"}')
   end
 
   def test_update_attribute

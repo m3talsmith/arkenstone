@@ -10,20 +10,4 @@ class ArkenstoneEnvTest < Test::Unit::TestCase
     assert(@env.verb == :get)
   end
 
-  def test_builds_a_request
-    result = @env.build_request
-    assert(result.class == Net::HTTP::Get)
-  end
-
-  def test_built_request_has_body
-    @env.body = 'hi'
-    result = @env.build_request
-    assert(result.body == 'hi')
-  end
-
-  def test_builds_a_request_with_a_proc
-    @env.body = Proc.new { |req| req.body = 'derp' }
-    result = @env.build_request
-    assert(result.body == 'derp')
-  end
 end
