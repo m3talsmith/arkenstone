@@ -169,6 +169,13 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(request.body == '{"name":"John Doe","age":18,"gender":"Male","bearded":true}')
   end
 
+  def test_set_request_data_double_json
+    User.arkenstone_content_type = :json
+    request = Net::HTTP::Post.new 'http://localhost'
+    User.set_request_data request, {name: "test"}.to_json
+    assert(request.body == '{"name":"test"}')
+  end
+
   def test_update_attribute
     stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
 

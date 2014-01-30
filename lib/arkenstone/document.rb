@@ -149,7 +149,6 @@ module Arkenstone
         self.build JSON.parse response.body
       end
 
-      # body is a string or a Proc that returns a string
       def send_request(url, verb, data=nil)
         uri = URI(url)
         http = Net::HTTP.new(uri.hostname, uri.port)
@@ -173,7 +172,8 @@ module Arkenstone
         when :form
           request.set_form_data data
         else
-          request.body = data.to_json
+          data = data.to_json unless data.class == String
+          request.body = data
           request.content_type = 'application/json'
         end
       end
