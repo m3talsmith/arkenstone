@@ -87,18 +87,7 @@ module Arkenstone
       end
 
       def http_response(url, method=:post)
-        data_setter = Proc.new { |req| set_request_data req }
-        self.class.send_request url, method, data_setter
-      end
-
-      def set_request_data(request)
-        case self.class.arkenstone_content_type
-        when :form
-          request.set_form_data saveable_attributes
-        else
-          request.body = saveable_attributes.to_json
-          request.content_type = 'application/json'
-        end
+        self.class.send_request url, method, saveable_attributes
       end
 
       def saveable_attributes
@@ -143,9 +132,7 @@ module Arkenstone
       end
 
       def parse_all(json)
-        if json.nil? or json.empty?
-          return [] 
-        end
+        return [] if json.nil? or json.empty?
         tree = JSON.parse json
         tree.map {|document| self.build document}
       end
@@ -163,15 +150,32 @@ module Arkenstone
       end
 
       # body is a string or a Proc that returns a string
-      def send_request(url, verb, body=nil)
+      def send_request(url, verb, data=nil)
         uri = URI(url)
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true if uri.scheme == 'https'
-        env = Arkenstone::Environment.new url: url, verb: verb, body: body
+        env = Arkenstone::Environment.new url: url, verb: verb, body: data
         self.call_request_hooks env
-        response = http.request env.build_request
+        request = build_request env.url, env.verb
+        set_request_data request, env.body
+        response = http.request request
         self.call_response_hooks response
         response
+      end
+
+      def build_request(url, verb)
+        klass = eval("Net::HTTP::#{verb.capitalize}")
+        klass.new URI(url)
+      end
+
+      def set_request_data(request, data)
+        case self.arkenstone_content_type
+        when :form
+          request.set_form_data data
+        else
+          request.body = data.to_json
+          request.content_type = 'application/json'
+        end
       end
 
       def response_is_success(response)
