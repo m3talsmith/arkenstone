@@ -4,7 +4,6 @@ module Arkenstone
       def included(base)
         base.send :include, Arkenstone::Validation::InstanceMethods
         base.extend Arkenstone::Validation::ClassMethods
-        base.fields_to_validate = {}
       end
     end    
 
@@ -72,6 +71,7 @@ module Arkenstone
 
       # Loops through the provided validators. A validator is passed when a validation method returns nil. All other values are treated as errors.
       def validate_with_validators
+        return if self.class.fields_to_validate.nil?
         self.class.fields_to_validate.each do |attr, validators|
           validators.each do |method, arg|
             validation_method = "validate_#{method}"
@@ -84,6 +84,13 @@ module Arkenstone
     end
 
     module ClassMethods
+
+      class << self
+        def extended(base)
+          base.fields_to_validate = {}
+        end
+      end
+
       attr_accessor :fields_to_validate, :custom_validators
 
       # Adds a custom validator method. Custom validators are responsible for adding errors to the `errors` hash.

@@ -69,4 +69,20 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.errors.nil? == false)
     assert(model.errors[:first_name] == ["can't be blank"])
   end
+
+  def test_validation_with_nil_fields_to_validate
+    eval %(
+      class ArkenstoneTestValidator
+        include Arkenstone::Validation
+        include Arkenstone::Document
+
+        attributes :id
+      end
+
+      class ArkenstoneChildValidator < ArkenstoneTestValidator
+      end
+    )
+    model = ArkenstoneChildValidator.new
+    assert(model.valid?)
+  end
 end
