@@ -158,7 +158,11 @@ module Arkenstone
         request = build_request env.url, env.verb
         set_request_data request, env.body
         response = http.request request
-        self.call_response_hooks response
+        if response_is_success response
+          self.call_response_hooks response
+        else
+          self.call_error_hooks response
+        end
         response
       end
 
@@ -196,6 +200,12 @@ module Arkenstone
 
       def call_response_hooks(response)
         enumerator = Proc.new { |h| h.after_complete response }
+        hooks = self.arkenstone_hooks
+        hooks.each(&enumerator) unless hooks.nil?
+      end
+
+      def call_error_hooks(response)
+        enumerator = Proc.new { |h| h.on_error response }
         hooks = self.arkenstone_hooks
         hooks.each(&enumerator) unless hooks.nil?
       end

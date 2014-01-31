@@ -115,4 +115,29 @@ class AssociationsTest < Test::Unit::TestCase
     result = model.bars
     assert(result != nil)
   end
+
+  def test_assoications_handles_405
+    eval %(
+      module Foo
+        class Bar
+          include Arkenstone::Document
+        end
+
+        class MyClass
+          include Arkenstone::Document
+          url "http://example.com/myclasses/"
+
+          attributes :id, :name
+
+          has_one :bar
+        end
+      end
+    )
+    stub_request(:get, "#{Foo::MyClass.arkenstone_url}100/bar").to_return(status: '405', body: "ERROR")
+    model = Foo::MyClass.new
+    model.id = 100
+    result = model.bar
+    assert(result == nil)
+
+  end
 end
