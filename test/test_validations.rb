@@ -32,7 +32,8 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
         include Arkenstone::Validation
 
         attr_accessor :last_name
-        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }      end
+        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }      
+      end
     )
     model = ArkenstoneTestLastName.new
     model.last_name = "ABC"
