@@ -48,6 +48,16 @@ module Arkenstone
         end
       end
 
+      # Checks if an attribute is the appropriate boolean value. 
+      #
+      # Example:
+      #
+      # validates :accepts_terms, acceptance: true
+      def validate_acceptance(attr, acceptance, message = "must be #{acceptance}")
+        val = self.send(attr)
+        message if val != acceptance
+      end
+
       # Checks if the attribute conforms with the provided regular expression.
       # Example:
       #

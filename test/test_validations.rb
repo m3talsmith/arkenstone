@@ -42,6 +42,20 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.valid?)
   end
 
+  def test_model_validate_true_value
+    eval %(
+      class ArkenstoneTestBool
+        include Arkenstone::Validation
+
+        attr_accessor :accepts_tandcs
+        validates :accepts_tandcs, acceptance: true
+      end
+    )
+    model = ArkenstoneTestBool.new
+    assert(model.valid? == false)
+    assert(model.errors[:accepts_tandcs] == ['must be true'])
+  end
+
   def test_model_custom_validator
     eval %(
       class ArkenstoneTestCustom
