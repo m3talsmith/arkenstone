@@ -50,19 +50,25 @@ module Arkenstone
 
       def update_attributes(new_attributes)
         original_attrs = self.attributes.clone
-        attrs = self.attributes
-        attrs.merge! new_attributes
-        self.attributes = attrs
-        if self.class.method_defined? :valid?
-          if self.valid?
-            self.save
-          else
-            self.attributes = original_attrs
-            false
-          end
+        self.attributes = self.attributes.merge! new_attributes
+        if has_validation_method?
+          save_if_valid original_attrs
         else
           self.save
         end
+      end
+
+      def save_if_valid(original_attrs)
+        if self.valid?
+          self.save
+        else
+          self.attributes = original_attrs
+          false
+        end
+      end
+
+      def has_validation_method?
+        self.class.method_defined? :valid?
       end
 
       def instance_url
@@ -150,16 +156,29 @@ module Arkenstone
       end
 
       def send_request(url, verb, data=nil)
+        http = create_http url
+        request_env = Arkenstone::Environment.new url: url, verb: verb, body: data
+        call_request_hooks request_env
+        request = build_request request_env.url, request_env.verb
+        set_request_data request, request_env.body
+        response = http.request request
+        handle_response response
+        response
+      end
+
+      def handle_response(response)
+        if response_is_success response
+          call_response_hooks response
+        else
+          call_error_hooks response
+        end
+      end
+
+      def create_http(url)
         uri = URI(url)
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true if uri.scheme == 'https'
-        env = Arkenstone::Environment.new url: url, verb: verb, body: data
-        self.call_request_hooks env
-        request = build_request env.url, env.verb
-        set_request_data request, env.body
-        response = http.request request
-        self.call_response_hooks response
-        response
+        http
       end
 
       def build_request(url, verb)
@@ -196,6 +215,12 @@ module Arkenstone
 
       def call_response_hooks(response)
         enumerator = Proc.new { |h| h.after_complete response }
+        hooks = self.arkenstone_hooks
+        hooks.each(&enumerator) unless hooks.nil?
+      end
+
+      def call_error_hooks(response)
+        enumerator = Proc.new { |h| h.on_error response }
         hooks = self.arkenstone_hooks
         hooks.each(&enumerator) unless hooks.nil?
       end

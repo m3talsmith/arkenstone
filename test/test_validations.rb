@@ -32,13 +32,28 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
         include Arkenstone::Validation
 
         attr_accessor :last_name
-        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }      end
+        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }      
+      end
     )
     model = ArkenstoneTestLastName.new
     model.last_name = "ABC"
     assert(model.valid? == false)
     model.last_name = "abc"
     assert(model.valid?)
+  end
+
+  def test_model_validate_true_value
+    eval %(
+      class ArkenstoneTestBool
+        include Arkenstone::Validation
+
+        attr_accessor :accepts_tandcs
+        validates :accepts_tandcs, acceptance: true
+      end
+    )
+    model = ArkenstoneTestBool.new
+    assert(model.valid? == false)
+    assert(model.errors[:accepts_tandcs] == ['must be true'])
   end
 
   def test_model_custom_validator
@@ -67,5 +82,21 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     model.valid?
     assert(model.errors.nil? == false)
     assert(model.errors[:first_name] == ["can't be blank"])
+  end
+
+  def test_validation_with_nil_fields_to_validate
+    eval %(
+      class ArkenstoneTestValidator
+        include Arkenstone::Validation
+        include Arkenstone::Document
+
+        attributes :id
+      end
+
+      class ArkenstoneChildValidator < ArkenstoneTestValidator
+      end
+    )
+    model = ArkenstoneChildValidator.new
+    assert(model.valid?)
   end
 end

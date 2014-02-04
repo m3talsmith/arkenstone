@@ -8,5 +8,8 @@ module Arkenstone
 
     def encode_attributes(attributes)
     end
+
+    def on_error(response)
+    end
   end
 end

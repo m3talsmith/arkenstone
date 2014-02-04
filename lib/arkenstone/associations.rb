@@ -8,22 +8,54 @@ module Arkenstone
         end
       end
 
+      # All association data is stored in a hash (@arkenstone_data) on the instance of the class. Each entry in the hash is keyed off the association name. The value of the hash key is a basic array. This can be wrapped up and extended if (when) more functionality is needed.
+      # `setup_arkenstone_data` creates the following *instance* methods on the class:
+      #
+      # `arkenstone_data` - the hash for the association data. Only use this if you're absolutely 100% sure that you don't need to get up to date data.
+      #
+      # `wipe_arkenstone_cache` - clears the cache for the association provided
       def setup_arkenstone_data
-        # All association data is stored in a hash (@arkenstone_data) on the instance of the class.
 
-        # Create a cached collection for the association. Only use this if you're absolutely 100% sure that you don't need to get up to date data.
         define_method('arkenstone_data') do
           @arkenstone_data = {} if @arkenstone_data.nil?
           @arkenstone_data
         end
 
-        # Clears a cache for a model
         define_method('wipe_arkenstone_cache') do |model_name|
           arkenstone_data[model_name] = nil
         end
 
       end
 
+      # Creates a 1 to Many association with the supplied `child_model_name`. Example:
+      #
+      #     class Flea
+      #     end
+      #
+      #     class Llama
+      #       has_many :fleas
+      #
+      #     end
+      #
+      # Once `has_many` has evaluated, the structure of `Llama` will look like this:
+      # 
+      #     class Llama
+      #       def cached_fleas
+      #         #snip
+      #       end
+      #
+      #       def fleas
+      #         #snip
+      #       end
+      #
+      #       def add_flea(new_flea)
+      #         #snip
+      #       end
+      #
+      #       def remove_flea(flea_to_remove)
+      #         #snip
+      #       end
+      #     end
       def has_many(child_model_name)
         setup_arkenstone_data
 
@@ -61,6 +93,32 @@ module Arkenstone
         end
       end
 
+      # Similar to `has_many` but for a 1 to 1 association. Example:
+      #
+      #     class Hat
+      #     end
+      #    
+      #     class Llama
+      #       has_one :hat
+      #     end
+      #
+      # Once `has_one` has evaluated, the structure of `Llama` will look like this:
+      #
+      #     class Llama
+      #       def cached_hat
+      #         #snip
+      #       end
+      #
+      #       def hat
+      #         #snip
+      #       end
+      #
+      #       def hat=(new_value)
+      #         #snip
+      #       end
+      #     end
+      #
+      # If nil is passed into the setter method (`hat=` in the above example), the association is removed.
       def has_one(child_model_name)
         setup_arkenstone_data
 
@@ -99,12 +157,14 @@ module Arkenstone
 
 
     module InstanceMethods
+      ### Fetches a `has_many` based resource
       def fetch_children(child_model_name)
         fetch_nested_resource child_model_name do |klass, response_body|
           klass.parse_all response_body
         end
       end
 
+      ### Fetches a single `has_one` based resource
       def fetch_child(child_model_name)
         fetch_nested_resource child_model_name do |klass, response_body|
           return nil if response_body.nil? or response_body.empty?
@@ -112,18 +172,21 @@ module Arkenstone
         end
       end
 
+      ### Calls the POST url for creating a nested_resource
       def add_child(child_model_name, child_id)
         url = build_nested_url child_model_name
         body = {id: child_id}.to_json
         self.class.send_request url, :post, body
       end
 
+      ### Calls the DELETE route for a nested resource
       def remove_child(child_model_name, child_id)
         url = build_nested_url child_model_name, child_id
         self.class.send_request url, :delete
       end
 
       private
+      ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback. 
       def fetch_nested_resource(nested_resource_name, &parser)
         url = build_nested_url nested_resource_name
         response = self.class.send_request url, :get
@@ -134,12 +197,22 @@ module Arkenstone
         parser[klass, response.body]
       end
 
+      # If the class is in a module, preserve the module namespace.
+      # Example:
+      #     
+      #     # for the class Zoo::Llama
+      #     prefix_with_class_module('Hat') # 'Zoo::Hat'
       def prefix_with_class_module(klass)
         mod = self.class.name.deconstantize
         klass = "#{mod}::#{klass}" unless mod.empty?
         klass
       end
 
+      # Builds a RESTful nested URL based on the instance URL.
+      # Example:
+      #
+      #     build_nested_url('fleas') # http://example.com/llamas/100/fleas
+      #     build_nested_url('fleas', 25) # http://example.com/llamas/100/fleas/25
       def build_nested_url(child_name, child_id = nil)
         url = "#{self.instance_url}/#{child_name}"
         url += "/#{child_id}" unless child_id.nil?
