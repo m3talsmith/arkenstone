@@ -56,6 +56,41 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.errors[:accepts_tandcs] == ['must be true'])
   end
 
+  def test_model_validates_type
+    eval %(
+      class ArkenstoneTestType
+        include Arkenstone::Validation
+
+        attr_accessor :should_be_string
+        validates :should_be_string, type: String
+      end
+    )
+
+    model = ArkenstoneTestType.new
+    model.should_be_string = "hi"
+    assert(model.valid?)
+    model.should_be_string = 100
+    assert(model.valid? == false)
+
+    eval %(
+      class BaseThing
+      end
+
+      class ChildThing < BaseThing
+      end
+
+      class InheritanceTestType
+        include Arkenstone::Validation
+
+        attr_accessor :should_be_base
+        validates :should_be_base, type: BaseThing
+      end
+    )
+    model = InheritanceTestType.new
+    model.should_be_base = ChildThing.new
+    assert(model.valid?)
+  end
+
   def test_model_custom_validator
     eval %(
       class ArkenstoneTestCustom

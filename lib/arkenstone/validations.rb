@@ -58,6 +58,20 @@ module Arkenstone
         message if val != acceptance
       end
 
+      # Checks if an attribute is an instance of a specific type, or one of its descendents.
+      #
+      # Example:
+      #
+      # validates :should_be_string, type: String
+      #
+      # That will check if `should_be_string` is a `String` or a subclass of `String`
+      def validate_type(attr, type, message = "must be type #{type}")
+        val = self.send(attr)
+        unless val.nil?
+          message unless val.is_a? type
+        end
+      end
+
       # Checks if the attribute conforms with the provided regular expression.
       # Example:
       #
