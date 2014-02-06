@@ -43,6 +43,8 @@ module Arkenstone
         return self
       end
 
+      alias_method :save!, :save
+
       def update_attribute(key, value)
         hash = { key.to_sym => value }
         self.update_attributes hash
