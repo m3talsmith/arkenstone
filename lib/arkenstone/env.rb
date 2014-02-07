@@ -1,6 +1,6 @@
 module Arkenstone
   class Environment
-    attr_accessor :url, :verb, :body
+    attr_accessor :url, :verb, :body, :headers
 
     def initialize(options)
       options.each do |key, value|
