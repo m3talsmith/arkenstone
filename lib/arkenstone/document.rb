@@ -163,6 +163,7 @@ module Arkenstone
         call_request_hooks request_env
         request = build_request request_env.url, request_env.verb
         set_request_data request, request_env.body
+        set_request_headers request, request_env.headers unless request_env.headers.nil?
         response = http.request request
         handle_response response
         response
@@ -196,6 +197,12 @@ module Arkenstone
           data = data.to_json unless data.class == String
           request.body = data
           request.content_type = 'application/json'
+        end
+      end
+
+      def set_request_headers(request, headers)
+        headers.each do |key, val|
+          request.add_field key, val
         end
       end
 

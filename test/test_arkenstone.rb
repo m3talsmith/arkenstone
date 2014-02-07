@@ -176,6 +176,14 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(request.body == '{"name":"test"}')
   end
 
+  def test_set_request_headers_sets_headers
+    request = Net::HTTP::Post.new 'http://localhost'
+    headers = { 'Test' => 'foo', 'Other' => 'other' }
+    User.set_request_headers request, headers
+    assert(request['Test'] == 'foo')
+    assert(request['Other'] == 'other')
+  end
+
   def test_update_attribute
     stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
 
