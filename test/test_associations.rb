@@ -140,4 +140,35 @@ class AssociationsTest < Test::Unit::TestCase
     assert(result == nil)
 
   end
+
+  def test_belongs_to_association
+    eval %(
+      module Foo
+        class Bar
+          include Arkenstone::Document
+          url 'http://example.com/bar'
+
+          attributes :id
+          belongs_to :my_class
+        end
+
+        class Freezer
+          include Arkenstone::Document
+          url 'http://example.com/freezer'
+          
+          attributes :id, :age
+          has_many :bars
+        end
+      end
+    )
+
+    stub_request(:post, Foo::Freezer.arkenstone_url).to_return(status: '200', body: {id: 1}.to_json)
+    stub_request(:post, Foo::Bar.arkenstone_url).to_return(status: '200', body: {id: 1, freezer_id: 1}.to_json)
+
+    freezer = Foo::Freezer.create({age: 30})
+    bar     = Foo::Bar.create({freezer: freezer})
+
+    assert(bar.freezer_id == freezer.id)
+    assert(bar.freezer    == freezer)
+  end
 end

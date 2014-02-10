@@ -27,7 +27,7 @@ module Arkenstone
 
       end
 
-      # Creates a 1 to Many association with the supplied `child_model_name`. Example:
+      # Creates a One to Many association with the supplied `child_model_name`. Example:
       #
       #     class Flea
       #     end
@@ -93,7 +93,7 @@ module Arkenstone
         end
       end
 
-      # Similar to `has_many` but for a 1 to 1 association. Example:
+      # Similar to `has_many` but for a One to One association. Example:
       #
       #     class Hat
       #     end
@@ -153,6 +153,26 @@ module Arkenstone
         end
 
       end
+
+      def belongs_to(parent_model_name)
+        setup_arkenstone_data
+        parent_model_field = "#{parent_model_name}_id"
+        
+        self.arkenstone_attributes << parent_model_field.to_sym
+        class_eval("attr_accessor :#{parent_model_field}")
+
+        define_method("#{parent_model_name}") do
+          klass_name = parent_model_name.to_s.classify
+          klass_name = prefix_with_class_module klass_name
+          klass      = Kernel.get_const klass_name
+
+          klass.send(:find, "self.#{parent_model_field}")
+        end
+
+        define_method("#{parent_model_name}=") do |parent_instance|
+          self.send parent_model_field.to_sym, parent_instance.id
+        end
+      end
     end
 
 
@@ -186,6 +206,7 @@ module Arkenstone
       end
 
       private
+
       ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback. 
       def fetch_nested_resource(nested_resource_name, &parser)
         url = build_nested_url nested_resource_name

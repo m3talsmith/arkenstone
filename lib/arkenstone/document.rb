@@ -24,6 +24,7 @@ module Arkenstone
       end
 
       def attributes=(options)
+        puts options
         self.arkenstone_json = options.to_json
         options.each do |key, value|
           self.send("#{key}=".to_sym, value) if self.respond_to? key
