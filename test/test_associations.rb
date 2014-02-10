@@ -149,7 +149,7 @@ class AssociationsTest < Test::Unit::TestCase
           url 'http://example.com/bar'
 
           attributes :id
-          belongs_to :my_class
+          belongs_to :freezer
         end
 
         class Freezer
@@ -168,7 +168,9 @@ class AssociationsTest < Test::Unit::TestCase
     freezer = Foo::Freezer.create({age: 30})
     bar     = Foo::Bar.create({freezer: freezer})
 
-    assert(bar.freezer_id == freezer.id)
-    assert(bar.freezer    == freezer)
+    stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200, body: freezer.to_json)
+
+    assert_equal(freezer.id, bar.freezer_id) 
+    assert_equal(freezer.to_json, bar.freezer.to_json)
   end
 end

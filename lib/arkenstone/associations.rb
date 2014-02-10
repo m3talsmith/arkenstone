@@ -155,7 +155,6 @@ module Arkenstone
       end
 
       def belongs_to(parent_model_name)
-        setup_arkenstone_data
         parent_model_field = "#{parent_model_name}_id"
         
         self.arkenstone_attributes << parent_model_field.to_sym
@@ -164,13 +163,13 @@ module Arkenstone
         define_method("#{parent_model_name}") do
           klass_name = parent_model_name.to_s.classify
           klass_name = prefix_with_class_module klass_name
-          klass      = Kernel.get_const klass_name
+          klass      = Kernel.const_get klass_name
 
-          klass.send(:find, "self.#{parent_model_field}")
+          klass_instance = klass.send(:find, self.send(parent_model_field.to_sym))
         end
 
         define_method("#{parent_model_name}=") do |parent_instance|
-          self.send parent_model_field.to_sym, parent_instance.id
+          self.send "#{parent_model_field}=".to_sym, parent_instance.id
         end
       end
     end
