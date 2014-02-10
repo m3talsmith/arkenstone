@@ -24,10 +24,10 @@ module Arkenstone
       end
 
       def attributes=(options)
-        self.arkenstone_json = options.to_json
         options.each do |key, value|
           self.send("#{key}=".to_sym, value) if self.respond_to? key
         end
+        self.arkenstone_json = attributes.to_json
         self.attributes
       end
 
@@ -151,7 +151,8 @@ module Arkenstone
       end
 
       def find(id)
-        url      = self.arkenstone_url + id.to_s
+        url      = [self.arkenstone_url, id.to_s].join('/') unless self.arkenstone_url =~ /(\/$)/
+        url      = self.arkenstone_url + id.to_s            if     self.arkenstone_url =~ /(\/$)/
         response = self.send_request url, :get
         return nil unless self.response_is_success response
         self.build JSON.parse response.body
