@@ -1,5 +1,6 @@
 require 'active_support/inflector'
 
+# TODO: consider splitting the bigger associations (has_many) into separate files
 module Arkenstone
   module Associations
     module ClassMethods
@@ -163,6 +164,22 @@ module Arkenstone
 
       end
 
+      # The opposite of a has_X relationship. Allows you to go back up the association tree. Example:
+      #
+      #     class Hat
+      #       belongs_to :llama
+      #     end
+      #
+      #     class Llama
+      #     end
+      #
+      # Once `belongs_to` has been evaluated, the structure of `Hat` will look like this:
+      #
+      #     class Hat
+      #       def llama
+      #         #snip
+      #       end
+      #     end
       def belongs_to(parent_model_name)
         parent_model_field = "#{parent_model_name}_id"
         
