@@ -226,6 +226,13 @@ module Arkenstone
       end
 
       def where(query = nil, &block)
+        body = build_where_body query, &block
+        return nil if body.nil?
+        response = self.send_request self.query_url, :post, body
+        parse_all response.body if self.response_is_success response
+      end
+
+      def build_where_body(query = nil, &block)
         if query.class == String
           body = query
         elsif query.class == Hash
@@ -234,11 +241,8 @@ module Arkenstone
           builder = Arkenstone::QueryBuilder.new
           body = builder.build(&block)
         else
-          return nil
+          nil
         end
-        response = self.send_request self.query_url, :post, body
-        return nil unless self.response_is_success response
-        parse_all response.body
       end
 
       def call_request_hooks(request)
