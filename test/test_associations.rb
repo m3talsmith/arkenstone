@@ -208,6 +208,6 @@ class AssociationsTest < Test::Unit::TestCase
 
     assert(freezer.bars)
     assert(freezer.bar_ids)
-    assert_equal(bar.id, freezer.bar_ids.include?(bar.id))
+    assert(freezer.bar_ids.include?(bar.id))
   end
 end
