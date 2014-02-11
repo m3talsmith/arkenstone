@@ -48,6 +48,10 @@ module Arkenstone
       #         #snip
       #       end
       #
+      #       def flea_ids
+      #         [...] # all the ids of the fleas 
+      #       end
+      #
       #       def add_flea(new_flea)
       #         #snip
       #       end
@@ -72,9 +76,10 @@ module Arkenstone
         # The uncached version is the name supplied to has_many. It wipes the cache for the association and refetches it.
         define_method(child_model_name) do 
           self.wipe_arkenstone_cache child_model_name
-          self.send cached_child_name.to_sym
+          self.send cached_child_name
         end
 
+        # Creates an array of the ids of the child models for quick access.
         singular = child_model_name.to_s.singularize
         define_method("#{singular}_ids") do
           (self.send cached_child_name).map(&:id)
@@ -85,7 +90,7 @@ module Arkenstone
         define_method(add_child_method_name) do |new_child|
           self.add_child child_model_name, new_child.id
           self.wipe_arkenstone_cache child_model_name
-          self.send cached_child_name.to_sym
+          self.send cached_child_name
         end
 
         # Remove a model from the association with remove_[child_model_name]. It performs two network calls, one to add it, then another to refetch the association.
@@ -93,7 +98,7 @@ module Arkenstone
         define_method(remove_child_method_name) do |child_to_remove|
           self.remove_child child_model_name, child_to_remove.id
           self.wipe_arkenstone_cache child_model_name
-          self.send cached_child_name.to_sym
+          self.send cached_child_name
         end
       end
 
@@ -146,13 +151,13 @@ module Arkenstone
         setter_method_name = "#{child_model_name}="
         define_method(setter_method_name) do |new_value|
           if new_value.nil?
-            old_model = self.send child_model_name.to_sym
+            old_model = self.send child_model_name
             self.remove_child child_model_name, old_model.id
             self.wipe_arkenstone_cache child_model_name
           else
             self.add_child child_model_name, new_value.id
             self.wipe_arkenstone_cache child_model_name
-            self.send cached_child_name.to_sym
+            self.send cached_child_name
           end
         end
 
@@ -169,7 +174,7 @@ module Arkenstone
           klass_name = prefix_with_class_module klass_name
           klass      = Kernel.const_get klass_name
 
-          klass_instance = klass.send(:find, self.send(parent_model_field.to_sym))
+          klass.send(:find, self.send(parent_model_field))
         end
 
         define_method("#{parent_model_name}=") do |parent_instance|
