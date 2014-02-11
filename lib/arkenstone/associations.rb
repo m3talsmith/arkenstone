@@ -75,8 +75,12 @@ module Arkenstone
           self.send cached_child_name.to_sym
         end
 
-        # Add a model to the association with add_[child_model_name]. It performs two network calls, one to add it, then another to refetch the association.
         singular = child_model_name.to_s.singularize
+        define_method("#{singular}_ids") do
+          (self.send cached_child_name).map(&:id)
+        end
+
+        # Add a model to the association with add_[child_model_name]. It performs two network calls, one to add it, then another to refetch the association.
         add_child_method_name = "add_#{singular}"
         define_method(add_child_method_name) do |new_child|
           self.add_child child_model_name, new_child.id

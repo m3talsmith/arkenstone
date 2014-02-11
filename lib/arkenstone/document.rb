@@ -6,6 +6,8 @@ module Arkenstone
       def included(base)
         base.send :include, Arkenstone::Document::InstanceMethods
         base.extend Arkenstone::Document::ClassMethods
+        base.send :include, Arkenstone::Helpers::GeneralMethods
+        base.extend Arkenstone::Helpers::GeneralMethods
         base.send :include, Arkenstone::Associations::InstanceMethods
         base.extend Arkenstone::Associations::ClassMethods
       end
@@ -74,11 +76,11 @@ module Arkenstone
       end
 
       def instance_url
-        "#{self.class.arkenstone_url}#{id}"
+        "#{full_url(self.class.arkenstone_url)}#{id}"
       end
 
       def class_url
-        self.class.arkenstone_url
+        full_url(self.class.arkenstone_url)
       end
 
       def post_document_data
@@ -135,7 +137,9 @@ module Arkenstone
 
       def build(options)
         document = self.new
-        document.attributes = options
+        document.attributes = options.select do |key, value|
+          document.respond_to? :"#{key}="
+        end
         return document
       end
 
@@ -151,11 +155,10 @@ module Arkenstone
       end
 
       def find(id)
-        url      = [self.arkenstone_url, id.to_s].join('/') unless self.arkenstone_url =~ /(\/$)/
-        url      = self.arkenstone_url + id.to_s            if     self.arkenstone_url =~ /(\/$)/
+        url      = full_url(self.arkenstone_url) + id.to_s
         response = self.send_request url, :get
         return nil unless self.response_is_success response
-        self.build JSON.parse response.body
+        self.build JSON.parse(response.body)
       end
 
       def send_request(url, verb, data=nil)
