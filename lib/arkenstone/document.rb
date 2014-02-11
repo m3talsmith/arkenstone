@@ -161,6 +161,7 @@ module Arkenstone
         self.build JSON.parse(response.body)
       end
 
+      # TODO: all of the http/network stuff is getting pretty big, I'd like to refactor it all out to its own module.
       def send_request(url, verb, data=nil)
         http = create_http url
         request_env = Arkenstone::Environment.new url: url, verb: verb, body: data
