@@ -120,6 +120,10 @@ module Arkenstone
         self.arkenstone_url = new_url
       end
 
+      def query_url
+        "#{full_url(self.arkenstone_url)}query"
+      end
+
       def add_hook(hook)
         self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
         self.arkenstone_hooks << hook
@@ -161,6 +165,7 @@ module Arkenstone
         self.build JSON.parse(response.body)
       end
 
+      # TODO: all of the http/network stuff is getting pretty big, I'd like to refactor it all out to its own module.
       def send_request(url, verb, data=nil)
         http = create_http url
         request_env = Arkenstone::Environment.new url: url, verb: verb, body: data
@@ -218,6 +223,26 @@ module Arkenstone
         response        = self.send_request self.arkenstone_url, :get
         documents       = parse_all response.body
         return documents
+      end
+
+      def where(query = nil, &block)
+        body = build_where_body query, &block
+        return nil if body.nil?
+        response = self.send_request self.query_url, :post, body
+        parse_all response.body if self.response_is_success response
+      end
+
+      def build_where_body(query = nil, &block)
+        if query.class == String
+          body = query
+        elsif query.class == Hash
+          body = query.to_json
+        elsif query.nil? && block_given?
+          builder = Arkenstone::QueryBuilder.new
+          body = builder.build(&block)
+        else
+          nil
+        end
       end
 
       def call_request_hooks(request)
