@@ -162,8 +162,8 @@ class AssociationsTest < Test::Unit::TestCase
       end
     )
 
-    stub_request(:post, Foo::Freezer.arkenstone_url).to_return(status: '200', body: {id: 1}.to_json)
-    stub_request(:post, Foo::Bar.arkenstone_url).to_return(status: '200', body: {id: 1, freezer_id: 1}.to_json)
+    stub_request(:post, Foo::Freezer.arkenstone_url + '/').to_return(status: '200', body: {id: 1}.to_json)
+    stub_request(:post, Foo::Bar.arkenstone_url + '/').to_return(status: '200', body: {id: 1, freezer_id: 1}.to_json)
 
     freezer = Foo::Freezer.create({age: 30})
     bar     = Foo::Bar.create({freezer: freezer})
