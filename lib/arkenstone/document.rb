@@ -120,6 +120,10 @@ module Arkenstone
         self.arkenstone_url = new_url
       end
 
+      def query_url
+        "#{full_url(self.arkenstone_url)}query"
+      end
+
       def add_hook(hook)
         self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
         self.arkenstone_hooks << hook
@@ -219,6 +223,22 @@ module Arkenstone
         response        = self.send_request self.arkenstone_url, :get
         documents       = parse_all response.body
         return documents
+      end
+
+      def where(query = nil, &block)
+        if query.class == String
+          body = query
+        elsif query.class == Hash
+          body = query.to_json
+        elsif query.nil? && block_given?
+          builder = Arkenstone::QueryBuilder.new
+          body = builder.build(&block)
+        else
+          return nil
+        end
+        response = self.send_request self.query_url, :post, body
+        return nil unless self.response_is_success response
+        parse_all response.body
       end
 
       def call_request_hooks(request)
