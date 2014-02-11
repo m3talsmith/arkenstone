@@ -176,8 +176,19 @@ module Arkenstone
           self.send "#{parent_model_field}=".to_sym, parent_instance.id
         end
       end
-    end
 
+      def has_and_belongs_to_many(model_klass_name)
+        # %w(pry pry-nav).each {|lib| require lib}
+
+        namespace          = self.to_s.split(/::/)
+        model_klass_name   = model_klass_name.to_s.singularize.underscore.to_sym
+        current_klass_name = namespace.pop.underscore.to_sym
+        join_klass_name    = ([model_klass_name, current_klass_name].sort).join('_').classify.to_sym
+        namespace          = Kernel.const_get(namespace.join('::'))
+
+        join_klass = namespace.const_set(join_klass_name, Class.new) unless namespace.constants.include?(join_klass_name)
+      end
+    end
 
     module InstanceMethods
       ### Fetches a `has_many` based resource
