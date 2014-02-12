@@ -1,6 +1,6 @@
 # Arkenstone [![Build Status](https://travis-ci.org/RevSpringPhoenix/arkenstone.png?branch=master)](https://travis-ci.org/RevSpringPhoenix/arkenstone)
 
-Arkenstone is a replacement for [ActiveRecord](http://api.rubyonrails.org/classes/ActiveRecord/Base.html) that "saves" models over RESTful services.
+Arkenstone is a replacement for [ActiveRecord](http://api.rubyonrails.org/classes/ActiveRecord/Base.html) that uses RESTful services to get and store data.
 
 ## Installation
 
@@ -29,17 +29,38 @@ Include the `Arkenstone::Document` module in your class, set the `url` and `attr
 
 `User` instances will have accessor properties for `:name`, `:age`, and `:gender`. You can also `save`, and `update_attributes` as well:
 
-    my_user = User.new
-    my_user.name = 'Thorin'
-    my_user.age = 195
-    my_user.gender = 'M'
-    my_user.bearded = true
-    my_user.save
+    my_user = User.create(name: 'Thorin', age: 195, gender: 'M', bearded: true)
 
 This will make a `POST` to `http://example.com/users/`. If json data is returned from the server, it will be applied to the attributes of the object.
 
-more tk.
+How about updating?
 
+    # Assuming Thorin has an id of 1
+    thorin = User.find(1)
+
+    # Thorin lost a bet and shaved... well you know how bets go!
+    thorin.update_attribute :bearded, false
+
+This does a `PUT` to `http://example.com/users/1`. Again, returning json is translated back into a usable Thorin.
+
+You can also change attributes using `#update_attributes` or setting them at a field level and saving.
+
+    # Thorin didn't shave for a day
+    thorin = User.find(1)
+    thorin.bearded = true
+    thorin.save
+
+`Arkenstone` knows if you're a new object or not and properly uses `POST` or `PUT` where needed.
+
+Here is a list of `RESTful` expectations that come with the library:
+
+1. Model#find(<id>) # => GET http://<Model#url>/<id>
+1. Model#all # => GET http://<Model#url>
+1. Model.new.save # => POST http://<Model#url
+1. Model.find(<id>).save # => PUT http://<Model#url>/<id>
+1. Model.find(<id>).update_attribute(:<attribute>, <value>) # => PUT http://<Model#url>/<id>
+1. Model.find(<id>).update_attributes(<attribute1>: <value1>, <attribute2>: <value2>) # => PUT http://<Model#url>/<id>
+1. Model.find(<id>).destroy # => DELETE http://<Model#url>/id
 
 ## Contributing
 
