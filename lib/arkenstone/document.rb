@@ -250,6 +250,18 @@ module Arkenstone
       end
 
       def call_request_hooks(request)
+        call_hook Proc.new { |h| h.before_request request }
+      end
+
+      def call_response_hooks(response)
+        call_hook Proc.new { |h| h.after_complete response }
+      end
+
+      def call_error_hooks(response)
+        call_hook Proc.new { |h| h.on_error response }
+      end
+
+      def call_hook(enumerator)
         hooks = []
         if self.arkenstone_inherit_hooks == true
           self.ancestors.each do |klass|
@@ -259,19 +271,6 @@ module Arkenstone
         else
           hooks = self.arkenstone_hooks
         end
-        enumerator = Proc.new { |h| h.before_request request }
-        hooks.each(&enumerator) unless hooks.nil?
-      end
-
-      def call_response_hooks(response)
-        enumerator = Proc.new { |h| h.after_complete response }
-        hooks = self.arkenstone_hooks
-        hooks.each(&enumerator) unless hooks.nil?
-      end
-
-      def call_error_hooks(response)
-        enumerator = Proc.new { |h| h.on_error response }
-        hooks = self.arkenstone_hooks
         hooks.each(&enumerator) unless hooks.nil?
       end
     end

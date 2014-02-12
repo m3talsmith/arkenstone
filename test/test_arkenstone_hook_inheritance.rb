@@ -8,18 +8,19 @@ class TestHook < Arkenstone::Hook
   end
 end
 
-class BaseModel
-  include Arkenstone::Document
-end
-
-class ChildModel < BaseModel
-  inherit_hooks
-end
-
 
 class ArkenstoneHookInheritanceTest < Test::Unit::TestCase
 
   def test_hooks_do_inheritance
+    eval %(
+      class BaseModel
+        include Arkenstone::Document
+      end
+
+      class ChildModel < BaseModel
+        inherit_hooks
+      end
+    )
     hook = TestHook.new
     BaseModel.add_hook hook
     ChildModel.call_request_hooks nil
