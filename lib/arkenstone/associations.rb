@@ -200,6 +200,9 @@ module Arkenstone
       end
     end
 
+      def has_and_belongs_to_many(child_model_name)
+
+      end
 
     module InstanceMethods
       ### Fetches a `has_many` based resource
