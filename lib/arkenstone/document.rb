@@ -189,7 +189,7 @@ module Arkenstone
       end
 
       def build_request(url, verb)
-        klass = eval("Net::HTTP::#{verb.capitalize}")
+        klass = Kernel.const_get("Net::HTTP").const_get(verb.capitalize)
         klass.new URI(url)
       end
 
