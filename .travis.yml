@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 1.9.3
+  - 2.0.0
+  - 2.1.0
+  - rbx
+  - ree
+  - ruby-head
+  - jruby-head
+  - jruby-19mode # JRuby in 1.9 mode
