@@ -114,7 +114,7 @@ module Arkenstone
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks, :arkenstone_inherit_hooks
 
       def url(new_url)
         self.arkenstone_url = new_url
@@ -127,6 +127,10 @@ module Arkenstone
       def add_hook(hook)
         self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
         self.arkenstone_hooks << hook
+      end
+
+      def inherit_hooks(val = true)
+        self.arkenstone_inherit_hooks = val
       end
 
       def attributes(*options)
@@ -246,7 +250,15 @@ module Arkenstone
       end
 
       def call_request_hooks(request)
-        hooks = self.arkenstone_hooks
+        hooks = []
+        if self.arkenstone_inherit_hooks == true
+          self.ancestors.each do |klass|
+            break if klass == Arkenstone::Associations::InstanceMethods
+            hooks.concat klass.arkenstone_hooks unless klass.arkenstone_hooks.nil?
+          end
+        else
+          hooks = self.arkenstone_hooks
+        end
         enumerator = Proc.new { |h| h.before_request request }
         hooks.each(&enumerator) unless hooks.nil?
       end
