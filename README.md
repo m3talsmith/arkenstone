@@ -1,4 +1,4 @@
-# Arkenstone
+# Arkenstone [![Build Status](https://travis-ci.org/RevSpringPhoenix/arkenstone.png?branch=master)](https://travis-ci.org/RevSpringPhoenix/arkenstone)
 
 Arkenstone is a replacement for [ActiveRecord](http://api.rubyonrails.org/classes/ActiveRecord/Base.html) that "saves" models over RESTful services.
 
