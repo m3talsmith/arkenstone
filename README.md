@@ -54,13 +54,15 @@ You can also change attributes using `#update_attributes` or setting them at a f
 
 Here is a list of `RESTful` expectations that come with the library:
 
-1. Model#find(<id>) # => GET http://<Model#url>/<id>
-1. Model#all # => GET http://<Model#url>
-1. Model.new.save # => POST http://<Model#url
-1. Model.find(<id>).save # => PUT http://<Model#url>/<id>
-1. Model.find(<id>).update_attribute(:<attribute>, <value>) # => PUT http://<Model#url>/<id>
-1. Model.find(<id>).update_attributes(<attribute1>: <value1>, <attribute2>: <value2>) # => PUT http://<Model#url>/<id>
-1. Model.find(<id>).destroy # => DELETE http://<Model#url>/id
+``` ruby
+Model.find(1)                                                               # => GET http://example.com/1
+Model.all                                                                   # => GET http://example.com
+Model.new.save                                                              # => POST http://example.com
+Model.find(1).save                                                          # => PUT http://example.com/1
+Model.find(1).update_attribute(:attribute, 'value')                         # => PUT http://example.com/1
+Model.find(1).update_attributes(attribute1: 'value1', attribute2: 'value2') # => PUT http://example.com/1
+Model.find(1).destroy                                                       # => DELETE http://example.com/1
+```
 
 ## Contributing
 
