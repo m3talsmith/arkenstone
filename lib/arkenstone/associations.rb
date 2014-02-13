@@ -178,17 +178,28 @@ module Arkenstone
       #       end
       #     end
       def belongs_to(parent_model_name)
+        setup_arkenstone_data
+
         parent_model_field = "#{parent_model_name}_id"
         
         self.arkenstone_attributes << parent_model_field.to_sym
         class_eval("attr_accessor :#{parent_model_field}")
 
-        add_association_method "#{parent_model_name}" do
-          klass_name = parent_model_name.to_s.classify
-          klass_name = prefix_with_class_module klass_name
-          klass      = Kernel.const_get klass_name
+        cached_parent_model_name = "cached_#{parent_model_name}"
+        add_association_method cached_parent_model_name do
+          cache = arkenstone_data
+          if cache[parent_model_name].nil?
+            klass_name = parent_model_name.to_s.classify
+            klass_name = prefix_with_class_module klass_name
+            klass      = Kernel.const_get klass_name
+            cache[parent_model_name] = klass.send(:find, self.send(parent_model_field))
+          end
+          cache[parent_model_name]
+        end
 
-          klass.send(:find, self.send(parent_model_field))
+        add_association_method "#{parent_model_name}" do
+          arkenstone_data[parent_model_name] = nil
+          self.send cached_parent_model_name
         end
 
         define_method("#{parent_model_name}=") do |parent_instance|

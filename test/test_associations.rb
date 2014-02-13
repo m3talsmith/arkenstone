@@ -181,6 +181,7 @@ class AssociationsTest < Test::Unit::TestCase
 
     assert_equal(freezer.id, bar.freezer_id) 
     assert_equal(freezer.to_json, bar.freezer.to_json)
+    assert_equal(bar.cached_freezer.id, freezer.id)
   end
 
   def test_handles_nested_json
