@@ -20,7 +20,16 @@ class AssociationsTest < Test::Unit::TestCase
         { body: @dummy_resource.to_json }
       end
     end
+  end
 
+  def test_associations_dont_clobber_existing_methods
+    AssociatedUser.add_association_method 'test_method' do
+      'replaced'
+    end
+    model = AssociatedUser.new
+    assert(model.test_method == 'on AssociatedUser')
+    #model = UserWithMethods.new
+    #assert(model.things == 'on UserWithMethods')
   end
 
   def test_has_many_creates_child_array
