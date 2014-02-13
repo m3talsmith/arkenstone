@@ -9,9 +9,8 @@ module Arkenstone
     end
 
     # Assume that every element is an Arkenstone::Document
-    def to_json
-      map { |element| element.attributes }.to_json
+    def to_json(options = nil)
+      map { |element| element.attributes }.to_json(options)
     end
-
   end
 end
