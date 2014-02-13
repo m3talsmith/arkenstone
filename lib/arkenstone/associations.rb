@@ -71,7 +71,6 @@ module Arkenstone
         end
 
         # The uncached version is the name supplied to has_many. It wipes the cache for the association and refetches it.
-        #self.add_association_method child_model_name do
         add_association_method child_model_name do 
           self.wipe_arkenstone_cache child_model_name
           self.send cached_child_name
@@ -185,6 +184,7 @@ module Arkenstone
         self.arkenstone_attributes << parent_model_field.to_sym
         class_eval("attr_accessor :#{parent_model_field}")
 
+        # The method for accessing the cached data is `cached_[name]`. If the cache is empty it creates a request to repopulate it from the server.
         cached_parent_model_name = "cached_#{parent_model_name}"
         add_association_method cached_parent_model_name do
           cache = arkenstone_data
@@ -194,6 +194,7 @@ module Arkenstone
           cache[parent_model_name]
         end
 
+        # The uncached version is the name supplied to belongs_to. It wipes the cache for the association and refetches it.
         add_association_method "#{parent_model_name}" do
           arkenstone_data[parent_model_name] = nil
           self.send cached_parent_model_name
@@ -228,6 +229,7 @@ module Arkenstone
         end
       end
 
+      ### Fetches a single `belongs_to` parent resource.
       def fetch_parent(parent_model_name)
         klass_name = parent_model_name.to_s.classify
         klass_name = prefix_with_class_module klass_name
