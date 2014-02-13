@@ -189,10 +189,7 @@ module Arkenstone
         add_association_method cached_parent_model_name do
           cache = arkenstone_data
           if cache[parent_model_name].nil?
-            klass_name = parent_model_name.to_s.classify
-            klass_name = prefix_with_class_module klass_name
-            klass      = Kernel.const_get klass_name
-            cache[parent_model_name] = klass.send(:find, self.send(parent_model_field))
+            cache[parent_model_name] = fetch_parent parent_model_name
           end
           cache[parent_model_name]
         end
@@ -229,6 +226,14 @@ module Arkenstone
           return nil if response_body.nil? or response_body.empty?
           klass.build JSON.parse(response_body)
         end
+      end
+
+      def fetch_parent(parent_model_name)
+        klass_name = parent_model_name.to_s.classify
+        klass_name = prefix_with_class_module klass_name
+        klass      = Kernel.const_get klass_name
+        parent_model_field = "#{parent_model_name}_id"
+        klass.send(:find, self.send(parent_model_field))
       end
 
       ### Calls the POST url for creating a nested_resource
