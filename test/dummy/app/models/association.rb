@@ -27,4 +27,8 @@ class AssociatedUser < User
   has_many :roles
   has_one :resource
 
+  def test_method
+    'on AssociatedUser'
+  end
 end
+
