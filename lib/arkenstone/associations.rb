@@ -1,4 +1,5 @@
 require 'active_support/inflector'
+require 'arkenstone/yarra'
 
 # TODO: consider splitting the bigger associations (has_many) into separate files
 module Arkenstone
@@ -181,6 +182,7 @@ module Arkenstone
 
         parent_model_field = "#{parent_model_name}_id"
         
+        self.arkenstone_attributes = [] unless self.arkenstone_attributes
         self.arkenstone_attributes << parent_model_field.to_sym
         class_eval("attr_accessor :#{parent_model_field}")
 
@@ -206,15 +208,35 @@ module Arkenstone
       end
 
       def has_and_belongs_to_many(model_klass_name)
-        # %w(pry pry-nav).each {|lib| require lib}
+        namespace             = self.to_s.split(/::/)
+        model_klass_name      = model_klass_name.to_s.singularize.underscore.to_sym
+        current_klass_name    = namespace.pop.underscore.to_sym
+        join_klass_name       = ([model_klass_name, current_klass_name].sort).join('_')
+        join_klass_classified = join_klass_name.classify.to_sym
+        join_klass_pluralized = join_klass_name.pluralize
+        namespace             = Kernel.const_get(namespace.join('::'))
 
-        namespace          = self.to_s.split(/::/)
-        model_klass_name   = model_klass_name.to_s.singularize.underscore.to_sym
-        current_klass_name = namespace.pop.underscore.to_sym
-        join_klass_name    = ([model_klass_name, current_klass_name].sort).join('_').classify.to_sym
-        namespace          = Kernel.const_get(namespace.join('::'))
+        unless namespace.constants.include?(join_klass_classified)
+          join_klass = namespace.const_set(join_klass_classified, Class.new)
+          join_klass.instance_eval {include Arkenstone::Document}
 
-        join_klass = namespace.const_set(join_klass_name, Class.new) unless namespace.constants.include?(join_klass_name)
+          join_klass.send :belongs_to, model_klass_name
+          join_klass.send :belongs_to, current_klass_name
+        end
+      
+        self.send(:has_many, join_klass_pluralized.to_sym) unless self.respond_to?(join_klass_pluralized.to_sym)
+
+        model_klass_pluralized = model_klass_name.to_s.pluralize
+        define_method "#{model_klass_pluralized}" do
+          model_klass_instances = self.send("cached_#{join_klass_pluralized}".to_sym).map(&:"#{model_klass_pluralized}")
+          model_klass_instances.instance_eval do
+            def <<(element)
+              binding.pry
+              push element
+            end
+          end
+          return model_klass_instances
+        end
       end
       
       # Adds a method to a class unless that method is already defined.
@@ -269,7 +291,7 @@ module Arkenstone
       def fetch_nested_resource(nested_resource_name, &parser)
         url = build_nested_url nested_resource_name
         response = self.class.send_request url, :get
-        return nil unless self.class.response_is_success response
+        return [] unless self.class.response_is_success response
         klass_name = nested_resource_name.to_s.classify
         klass_name = prefix_with_class_module klass_name
         klass = Kernel.const_get klass_name 
