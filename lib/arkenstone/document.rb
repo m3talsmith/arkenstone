@@ -1,6 +1,23 @@
 require 'json'
 
 module Arkenstone
+  # # Document
+  #
+  # A `Document` is the main entry point for Arkenstone. A `Document` is a model that is retrieved and/or stored on a RESTful service. For example, if you have a web service that has a URL structure like:
+  #
+  #     http://example.com/users
+  #
+  # You can create a `User` model, include `Document` and it will automatically create methods to fetch and save data from that URL.
+  #
+  #     class User
+  #       include Arkenstone::Document
+  #
+  #       url 'http://example.com/users'
+  #
+  #       attributes :first_name, :last_name, :email
+  #     end
+  #
+  # Attributes create properties on instances that match up with the data returned by the `url`. Properties on the web service are ignored if they are not present within the `attributes` list.
   module Document
     class << self
       def included(base)
@@ -14,8 +31,10 @@ module Arkenstone
     end
 
     module InstanceMethods
-      attr_accessor :arkenstone_json, :arkenstone_attributes, :id
+      ### The convention is for all Documents to have an id. 
+      attr_accessor :id, :arkenstone_json, :arkenstone_attributes
 
+      ### Easy access to all of the attributes defined for this Document.
       def attributes
         new_hash = {}
         self.class.arkenstone_attributes.each do |key|
@@ -25,6 +44,7 @@ module Arkenstone
         new_hash
       end
 
+      ### Set attributes for a Document. If a key in the `options` hash is not present in the attributes list, it is ignored.
       def attributes=(options)
         options.each do |key, value|
           self.send("#{key}=".to_sym, value) if self.respond_to? key
@@ -33,10 +53,12 @@ module Arkenstone
         self.attributes
       end
 
+      ### Serializes the attributes to json.
       def to_json
         self.attributes.to_json
       end
 
+      ### If this is a new Document, create it with a POST request, otherwise update it with a PUT.
       def save
         self.timestamp if self.respond_to?(:timestampable)
         response             = self.id ? put_document_data : post_document_data
@@ -47,11 +69,13 @@ module Arkenstone
 
       alias_method :save!, :save
 
+      ### Update a single attribute. Performs validation (by calling `update_attributes`).
       def update_attribute(key, value)
         hash = { key.to_sym => value }
         self.update_attributes hash
       end
 
+      ### Update multiple attributes at once. Performs validation (if that is setup for this document).
       def update_attributes(new_attributes)
         original_attrs = self.attributes.clone
         self.attributes = self.attributes.merge! new_attributes
@@ -62,6 +86,8 @@ module Arkenstone
         end
       end
 
+      # If a model passes validation, it is saved, otherwise the original attributes (`original_attrs`) are reset.
+      # Assumes there is a validation method defined for the Document.
       def save_if_valid(original_attrs)
         if self.valid?
           self.save
@@ -71,31 +97,45 @@ module Arkenstone
         end
       end
 
+      ### Checks if there is a `valid?` method.
       def has_validation_method?
         self.class.method_defined? :valid?
       end
 
+      # Retrieves a RESTful URL for an instance, in this case by tacking an id onto the end of the `arkenstone_url`.
+      # Example:
+      #
+      #     # arkenstone_url
+      #     http://example.com/users
+      #
+      #     # instance_url
+      #     http://example.com/users/100
       def instance_url
         "#{full_url(self.class.arkenstone_url)}#{id}"
       end
 
+      ### The full RESTful URL for a Document.
       def class_url
         full_url(self.class.arkenstone_url)
       end
 
+      ### Save via POST.
       def post_document_data
         http_response class_url, :post
       end
 
+      ### Save via PUT.
       def put_document_data
         http_response instance_url, :put
       end
 
+      ### Sends a DELETE request to the `instance_url`.
       def destroy
         resp = http_response instance_url, :delete
         self.class.response_is_success resp
       end
 
+      ### Sends a network request with the `attributes` as the body.
       def http_response(url, method=:post)
         self.class.send_request url, method, saveable_attributes
       end
