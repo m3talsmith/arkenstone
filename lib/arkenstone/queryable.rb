@@ -1,6 +1,12 @@
 module Arkenstone
   module Queryable
 
+    class << self
+      def included(base)
+        base.extend Arkenstone::Queryable::ClassMethods
+      end
+    end
+
     module ClassMethods
       def query_url
         "#{full_url(self.arkenstone_url)}query"

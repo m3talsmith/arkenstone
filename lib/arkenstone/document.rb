@@ -27,8 +27,6 @@ module Arkenstone
         base.extend Arkenstone::Helpers::GeneralMethods
         base.send :include, Arkenstone::Associations::InstanceMethods
         base.extend Arkenstone::Associations::ClassMethods
-        # TODO remove this extend, to let the end user define their own query/where stuff
-        base.extend Arkenstone::Queryable::ClassMethods
       end
     end
 
