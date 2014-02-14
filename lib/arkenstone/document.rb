@@ -154,7 +154,8 @@ module Arkenstone
       def parse_all(json)
         return [] if json.nil? or json.empty?
         tree = JSON.parse json
-        tree.map {|document| self.build document}
+        documents = tree.map {|document| self.build document}
+        Arkenstone::QueryList.new documents
       end
 
       def create(options)
