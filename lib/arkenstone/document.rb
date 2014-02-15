@@ -114,15 +114,23 @@ module Arkenstone
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks, :arkenstone_inherit_hooks
 
       def url(new_url)
         self.arkenstone_url = new_url
       end
 
+      def query_url
+        "#{full_url(self.arkenstone_url)}query"
+      end
+
       def add_hook(hook)
         self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
         self.arkenstone_hooks << hook
+      end
+
+      def inherit_hooks(val = true)
+        self.arkenstone_inherit_hooks = val
       end
 
       def attributes(*options)
@@ -146,7 +154,8 @@ module Arkenstone
       def parse_all(json)
         return [] if json.nil? or json.empty?
         tree = JSON.parse json
-        tree.map {|document| self.build document}
+        documents = tree.map {|document| self.build document}
+        Arkenstone::QueryList.new documents
       end
 
       def create(options)
@@ -161,6 +170,7 @@ module Arkenstone
         self.build JSON.parse(response.body)
       end
 
+      # TODO: all of the http/network stuff is getting pretty big, I'd like to refactor it all out to its own module.
       def send_request(url, verb, data=nil)
         http = create_http url
         request_env = Arkenstone::Environment.new url: url, verb: verb, body: data
@@ -220,21 +230,48 @@ module Arkenstone
         return documents
       end
 
+      def where(query = nil, &block)
+        body = build_where_body query, &block
+        return nil if body.nil?
+        response = self.send_request self.query_url, :post, body
+        parse_all response.body if self.response_is_success response
+      end
+
+      def build_where_body(query = nil, &block)
+        if query.class == String
+          body = query
+        elsif query.class == Hash
+          body = query.to_json
+        elsif query.nil? && block_given?
+          builder = Arkenstone::QueryBuilder.new
+          body = builder.build(&block)
+        else
+          nil
+        end
+      end
+
       def call_request_hooks(request)
-        hooks = self.arkenstone_hooks
-        enumerator = Proc.new { |h| h.before_request request }
-        hooks.each(&enumerator) unless hooks.nil?
+        call_hook Proc.new { |h| h.before_request request }
       end
 
       def call_response_hooks(response)
-        enumerator = Proc.new { |h| h.after_complete response }
-        hooks = self.arkenstone_hooks
-        hooks.each(&enumerator) unless hooks.nil?
+        call_hook Proc.new { |h| h.after_complete response }
       end
 
       def call_error_hooks(response)
-        enumerator = Proc.new { |h| h.on_error response }
-        hooks = self.arkenstone_hooks
+        call_hook Proc.new { |h| h.on_error response }
+      end
+
+      def call_hook(enumerator)
+        hooks = []
+        if self.arkenstone_inherit_hooks == true
+          self.ancestors.each do |klass|
+            break if klass == Arkenstone::Associations::InstanceMethods
+            hooks.concat klass.arkenstone_hooks unless klass.arkenstone_hooks.nil?
+          end
+        else
+          hooks = self.arkenstone_hooks
+        end
         hooks.each(&enumerator) unless hooks.nil?
       end
     end

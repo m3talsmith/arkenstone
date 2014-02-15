@@ -20,7 +20,16 @@ class AssociationsTest < Test::Unit::TestCase
         { body: @dummy_resource.to_json }
       end
     end
+  end
 
+  def test_associations_dont_clobber_existing_methods
+    AssociatedUser.add_association_method 'test_method' do
+      'replaced'
+    end
+    model = AssociatedUser.new
+    assert(model.test_method == 'on AssociatedUser')
+    #model = UserWithMethods.new
+    #assert(model.things == 'on UserWithMethods')
   end
 
   def test_has_many_creates_child_array
@@ -172,6 +181,7 @@ class AssociationsTest < Test::Unit::TestCase
 
     assert_equal(freezer.id, bar.freezer_id) 
     assert_equal(freezer.to_json, bar.freezer.to_json)
+    assert_equal(bar.cached_freezer.id, freezer.id)
   end
 
   def test_handles_nested_json
@@ -209,49 +219,5 @@ class AssociationsTest < Test::Unit::TestCase
     assert(freezer.bars)
     assert(freezer.bar_ids)
     assert(freezer.bar_ids.include?(bar.id))
-  end
-
-  def test_has_and_belongs_to_many
-    eval %(
-      module BrewMaster
-        class Tag
-          include Arkenstone::Document
-          url 'http://example.com/tag'
-
-          attributes :id, :name
-          has_and_belongs_to_many :beers
-        end
-
-        class Beer
-          include Arkenstone::Document
-          url 'http://example.com/beer'
-          
-          attributes :id, :brand, :filtered
-          has_and_belongs_to_many :tags
-        end
-      end
-    )
-
-    assert(BrewMaster::BeerTag)
-    
-    %w(blonde pale ipa hot sour).each do |tag|
-      BrewMaster::Tag.create(name: tag)
-    end
-
-    beer = BrewMaster::Beer.create(brand: 'Full Sail', filtered: false)
-    tag  = BrewMaster::Tag.query(name: 'ipa').first
-
-    assert(beer.tags.empty?)
-    assert(tag.beers.empty?)
-    
-    beer.tags << tag
-    assert(beer.tags.include?(tag))
-    assert(tag.beers.include?(beer))
-
-    beer.reload
-    tag.reload
-
-    assert(beer.tags.include?(tag))
-    assert(tag.beers.include?(beer))
   end
 end
