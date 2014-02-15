@@ -21,12 +21,10 @@ module Arkenstone
   module Document
     class << self
       def included(base)
+        base.send :include, Arkenstone::Helpers
+        base.send :include, Arkenstone::Associations
         base.send :include, Arkenstone::Document::InstanceMethods
         base.extend Arkenstone::Document::ClassMethods
-        base.send :include, Arkenstone::Helpers::GeneralMethods
-        base.extend Arkenstone::Helpers::GeneralMethods
-        base.send :include, Arkenstone::Associations::InstanceMethods
-        base.extend Arkenstone::Associations::ClassMethods
       end
     end
 
@@ -353,7 +351,8 @@ module Arkenstone
         hooks = []
         if self.arkenstone_inherit_hooks == true
           self.ancestors.each do |klass|
-            break if klass == Arkenstone::Associations::InstanceMethods
+            break if     klass == Arkenstone::Associations::InstanceMethods
+            break unless klass.respond_to?(:arkenstone_hooks)
             hooks.concat klass.arkenstone_hooks unless klass.arkenstone_hooks.nil?
           end
         else

@@ -3,6 +3,14 @@ require 'active_support/inflector'
 # TODO: consider splitting the bigger associations (has_many) into separate files
 module Arkenstone
   module Associations
+    class << self
+      def included(base)
+        base.send :include, Arkenstone::Associations::Resources
+        base.send :include, Arkenstone::Associations::InstanceMethods
+        base.extend Arkenstone::Associations::ClassMethods
+      end
+    end
+
     module ClassMethods
 
       # All association data is stored in a hash (@arkenstone_data) on the instance of the class. Each entry in the hash is keyed off the association name. The value of the hash key is a basic array. This can be wrapped up and extended if (when) more functionality is needed.
@@ -301,6 +309,10 @@ module Arkenstone
     end
 
     module InstanceMethods
+      ### Attaches singleton methods from Arkenstone::Associations::Resource
+      def attach_nested_resource_methods(nested_resources)
+      end
+
       ### Fetches a `has_many` based resource
       def fetch_children(child_model_name)
         fetch_nested_resource child_model_name do |klass, response_body|
@@ -342,6 +354,7 @@ module Arkenstone
 
       ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback. 
       def fetch_nested_resource(nested_resource_name, &parser)
+        # binding.pry
         url = build_nested_url nested_resource_name
         response = self.class.send_request url, :get
         return [] unless self.class.response_is_success response
