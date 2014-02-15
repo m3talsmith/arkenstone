@@ -56,6 +56,12 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
     assert(beer.tags.include?(tag))
     assert(tag.beers.include?(beer))
 
+    stub_request(:put, BrewMaster::Tag.arkenstone_url + '/1').to_return(status: '200', body: {id: 1}.to_json)
+    stub_request(:put, BrewMaster::Beer.arkenstone_url + '/1').to_return(status: '200', body: {id: 1}.to_json)
+
+    beer.save
+    tag.save
+
     beer.reload
     tag.reload
 

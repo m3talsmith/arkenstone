@@ -1,5 +1,4 @@
 require 'active_support/inflector'
-require 'arkenstone/yarra'
 
 # TODO: consider splitting the bigger associations (has_many) into separate files
 module Arkenstone
@@ -207,35 +206,89 @@ module Arkenstone
         end
       end
 
+      ### Support for `has_and_belongs_to_many` relationship
       def has_and_belongs_to_many(model_klass_name)
+
+        # Gather the namespace
         namespace             = self.to_s.split(/::/)
         model_klass_name      = model_klass_name.to_s.singularize.underscore.to_sym
         current_klass_name    = namespace.pop.underscore.to_sym
+
+        # Build join class needs
         join_klass_name       = ([model_klass_name, current_klass_name].sort).join('_')
         join_klass_classified = join_klass_name.classify.to_sym
         join_klass_pluralized = join_klass_name.pluralize
         namespace             = Kernel.const_get(namespace.join('::'))
 
+        # Create the join class if it doesn't exist already
         unless namespace.constants.include?(join_klass_classified)
           join_klass = namespace.const_set(join_klass_classified, Class.new)
           join_klass.instance_eval {include Arkenstone::Document}
 
+          # The join class should belong to both foreign sides of the relationship
           join_klass.send :belongs_to, model_klass_name
           join_klass.send :belongs_to, current_klass_name
         end
       
+        # This class should belong to the join table
         self.send(:has_many, join_klass_pluralized.to_sym) unless self.respond_to?(join_klass_pluralized.to_sym)
 
+        # These are helper variables for the cached and uncached join `:through` instances
         model_klass_pluralized = model_klass_name.to_s.pluralize
+        cached_instances_field = "cached_#{model_klass_pluralized}"
+
+        self.send :attr_accessor, cached_instances_field.to_sym
+
+        # Creates a `self.join_through_instances` helper method
+        # 
+        # This actually pulls instances of the join model and then maps on the
+        # complimenting foreign key to gather all the foreign join instances
+        #
         define_method "#{model_klass_pluralized}" do
-          model_klass_instances = self.send("cached_#{join_klass_pluralized}".to_sym).map(&:"#{model_klass_pluralized}")
-          model_klass_instances.instance_eval do
-            def <<(element)
-              binding.pry
+          current_klass_instance   = self # The instance calling this method
+          current_klass_pluralized = current_klass_name.to_s.pluralize
+
+          # Check for cached joined instances
+          cached_instances         = current_klass_instance.send cached_instances_field
+          if cached_instances
+            return cached_instances
+          else
+            # Get from joined instances
+            model_klass_instances = self.send("cached_#{join_klass_pluralized}".to_sym).map(&:"#{model_klass_pluralized}")
+
+            # Redefine `<<` so that you can something like `beer.tags << new_tag`
+            model_klass_instances.define_singleton_method :<< do |element|
+              # Use built in `push` for `Array.new`
               push element
+
+              # Cache the result
+              current_klass_instance.send "#{cached_instances_field}=", self
+
+              # Add the current class instance in the other side of the join
+              # The equivelant of doing `beer.tags << tag` then `tag.beers << beer`
+              #
+              # Grab the current_klass_instances from element
+              element_current_klass_instances = element.send(current_klass_pluralized)
+
+              # Push the current_klass_instance to what element currently has
+              element_current_klass_instances = element_current_klass_instances.push(current_klass_instance)
+
+              # Save the new stack of current_klass_instances with element
+              element.send "#{current_klass_pluralized}=", element_current_klass_instances
+
+              # Return the new array
+              return self
             end
+            return model_klass_instances
           end
-          return model_klass_instances
+        end
+
+        # This creates a setter helper to set all joined instances on the
+        # opposite side of the foreign join
+        #
+        define_method "#{model_klass_pluralized}=" do |elements|
+          current_klass_instance = self
+          current_klass_instance.send "#{cached_instances_field}=", elements
         end
       end
       
