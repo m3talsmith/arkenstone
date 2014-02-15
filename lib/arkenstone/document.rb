@@ -67,6 +67,13 @@ module Arkenstone
         return self
       end
 
+      ### Reloading the document fetches the document again by it's id
+      def reload
+        reloaded_self = self.class.find(self.id)
+        self.attributes = reloaded_self.attributes
+        return self
+      end
+
       alias_method :save!, :save
 
       ### Update a single attribute. Performs validation (by calling `update_attributes`).

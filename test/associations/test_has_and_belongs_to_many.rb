@@ -6,6 +6,7 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
       module BrewMaster
         class Tag
           include Arkenstone::Document
+          include Arkenstone::Queryable
           url 'http://example.com/tag'
 
           attributes :id, :name
@@ -14,6 +15,7 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
 
         class Beer
           include Arkenstone::Document
+          include Arkenstone::Queryable
           url 'http://example.com/beer'
           
           attributes :id, :brand, :filtered
@@ -61,6 +63,9 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
 
     beer.save
     tag.save
+
+    stub_request(:get, BrewMaster::Tag.arkenstone_url + '/1').to_return(status: 200, body: {id: 1}.to_json)
+    stub_request(:get, BrewMaster::Beer.arkenstone_url + '/1').to_return(status: 200, body: {id: 1}.to_json)
 
     beer.reload
     tag.reload
