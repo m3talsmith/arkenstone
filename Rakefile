@@ -7,6 +7,8 @@ end
 
 Rake::TestTask.new do |t|
   t.libs << 'test'
+  t.libs << 'test/test_associations'
+  puts t.libs
 end
 
 desc "Run tests"

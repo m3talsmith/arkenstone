@@ -21,12 +21,10 @@ module Arkenstone
   module Document
     class << self
       def included(base)
+        base.send :include, Arkenstone::Helpers
+        base.send :include, Arkenstone::Associations
         base.send :include, Arkenstone::Document::InstanceMethods
         base.extend Arkenstone::Document::ClassMethods
-        base.send :include, Arkenstone::Helpers::GeneralMethods
-        base.extend Arkenstone::Helpers::GeneralMethods
-        base.send :include, Arkenstone::Associations::InstanceMethods
-        base.extend Arkenstone::Associations::ClassMethods
       end
     end
 
@@ -64,6 +62,13 @@ module Arkenstone
         response             = self.id ? put_document_data : post_document_data
         self.arkenstone_json = response.body
         self.attributes      = JSON.parse(response.body)
+        return self
+      end
+
+      ### Reloading the document fetches the document again by it's id
+      def reload
+        reloaded_self = self.class.find(self.id)
+        self.attributes = reloaded_self.attributes
         return self
       end
 
@@ -289,7 +294,7 @@ module Arkenstone
 
       ### Builds a Net::HTTP request object for the appropriate verb.
       def build_request(url, verb)
-        klass = eval("Net::HTTP::#{verb.capitalize}")
+        klass = Kernel.const_get("Net::HTTP").const_get(verb.capitalize)
         klass.new URI(url)
       end
 
@@ -346,7 +351,8 @@ module Arkenstone
         hooks = []
         if self.arkenstone_inherit_hooks == true
           self.ancestors.each do |klass|
-            break if klass == Arkenstone::Associations::InstanceMethods
+            break if     klass == Arkenstone::Associations::InstanceMethods
+            break unless klass.respond_to?(:arkenstone_hooks)
             hooks.concat klass.arkenstone_hooks unless klass.arkenstone_hooks.nil?
           end
         else

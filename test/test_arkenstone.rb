@@ -233,6 +233,37 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(result == [])
   end
 
+  def test_reload
+    eval %(
+      class Ball
+        include Arkenstone::Document
+
+        url 'http://example.com/balls'
+        attributes :color
+      end
+    )
+    
+    stub_request(:post, Ball.arkenstone_url + '/').to_return(status: '200', body: {id: 1, color: 'blue'}.to_json)
+
+    ball = Ball.create(color: 'blue')
+    assert(ball.color == 'blue')
+    
+    ball.color = 'orange'
+    assert(ball.color == 'orange')
+
+    stub_request(:put, Ball.arkenstone_url + '/1').to_return(status: '200', body: {id: 1, color: 'orange'}.to_json)
+
+    ball.save
+
+    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: {id: 1, color: 'orange'}.to_json)
+
+    ball.reload
+    assert(ball.color == 'orange')
+
+    found_ball = Ball.find(ball.id)
+    assert(found_ball.color == 'orange')
+  end
+
 end
 
 def build_user(id)
