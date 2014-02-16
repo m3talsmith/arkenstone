@@ -73,7 +73,9 @@ module Arkenstone
         add_association_method cached_child_name do
           cache = arkenstone_data
           if cache[child_model_name].nil?
-            cache[child_model_name] = fetch_children child_model_name
+            child_instances = fetch_children child_model_name
+            attach_nested_has_many_resource_methods(child_instances, child_model_name)
+            cache[child_model_name] = child_instances
           end
           cache[child_model_name]
         end
@@ -309,10 +311,6 @@ module Arkenstone
     end
 
     module InstanceMethods
-      ### Attaches singleton methods from Arkenstone::Associations::Resource
-      def attach_nested_resource_methods(nested_resources)
-      end
-
       ### Fetches a `has_many` based resource
       def fetch_children(child_model_name)
         fetch_nested_resource child_model_name do |klass, response_body|
@@ -354,7 +352,6 @@ module Arkenstone
 
       ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback. 
       def fetch_nested_resource(nested_resource_name, &parser)
-        # binding.pry
         url = build_nested_url nested_resource_name
         response = self.class.send_request url, :get
         return [] unless self.class.response_is_success response

@@ -23,23 +23,20 @@ class DocumentOverridesTest < Test::Unit::TestCase
     stub_request(:get, Brand.arkenstone_url + '/1/balls').to_return(status: 200, body: [].to_json)
 
     brand = Brand.create(name: 'Foo')
+    assert(!brand.arkenstone_data[:balls])
 
-    binding.pry
-    assert(!brand.arkenstone_data['cached_balls'])
+    stub_request(:post, Brand.arkenstone_url + '/1/balls/').to_return(status: '200', body: {id: 1, color: 'blue', brand_id: brand.id}.to_json)
 
-    stub_request(:post, Brand.arkenstone_url + '/1/balls').to_return(status: '200', body: {id: 1, color: 'blue'}.to_json)
+    ball = brand.balls.create(color: 'blue')
+    assert(brand.arkenstone_data[:balls])
 
-    ball = brand.balls.build(color: 'blue')
-    ball.save
-
-    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: {id: 1, color: 'orange'}.to_json)
-
+    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: {id: 1, color: 'blue', brand_id: brand.id}.to_json)
     ball.reload
-    assert(ball.color == 'orange')
+
+    assert(ball.color == 'blue')
 
     found_ball = Ball.find(ball.id)
-    assert(found_ball.color == 'orange')
-    brand.balls << ball
-    assert(brand.balls.include?(ball))
+    assert(found_ball.color == 'blue')
+    assert_equal(ball.to_json, found_ball.to_json)
   end
 end
