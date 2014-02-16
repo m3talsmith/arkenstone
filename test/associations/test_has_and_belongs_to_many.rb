@@ -70,8 +70,6 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
     beer.reload
     tag.reload
 
-    binding.pry
-
     assert(beer.tags.include?(tag))
     assert(tag.beers.include?(beer))
   end
