@@ -156,7 +156,7 @@ module Arkenstone
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks, :arkenstone_inherit_hooks
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_hooks, :arkenstone_inherit_hooks
 
       ### Sets the root url used for generating RESTful requests.
       def url(new_url)
@@ -221,10 +221,6 @@ module Arkenstone
         self.arkenstone_attributes = options
         class_eval("attr_accessor :#{options.join(', :')}")
         return self.arkenstone_attributes
-      end
-
-      def content_type(new_content_type)
-        self.arkenstone_content_type = new_content_type
       end
 
       ### Constructs a new instance with the provided attributes.
@@ -297,14 +293,9 @@ module Arkenstone
 
       ### Fills in the body of a request with the appropriate serialized data.
       def set_request_data(request, data)
-        case self.arkenstone_content_type
-        when :form
-          request.set_form_data data
-        else
-          data = data.to_json unless data.class == String
-          request.body = data
-          request.content_type = 'application/json'
-        end
+        data = data.to_json unless data.class == String
+        request.body = data
+        request.content_type = 'application/json'
       end
 
       ### Sets HTTP headers on the request.
