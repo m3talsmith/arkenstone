@@ -30,7 +30,7 @@ module Arkenstone
 
     module InstanceMethods
       ### The convention is for all Documents to have an id. 
-      attr_accessor :id, :arkenstone_json, :arkenstone_attributes
+      attr_accessor :id, :arkenstone_attributes
 
       ### Easy access to all of the attributes defined for this Document.
       def attributes
@@ -38,7 +38,6 @@ module Arkenstone
         self.class.arkenstone_attributes.each do |key|
           new_hash[key.to_sym] = self.send("#{key}")
         end
-        self.arkenstone_json = new_hash.to_json
         new_hash
       end
 
@@ -47,7 +46,6 @@ module Arkenstone
         options.each do |key, value|
           self.send("#{key}=".to_sym, value) if self.respond_to? key
         end
-        self.arkenstone_json = attributes.to_json
         self.attributes
       end
 
@@ -60,7 +58,6 @@ module Arkenstone
       def save
         self.timestamp if self.respond_to?(:timestampable)
         response             = self.id ? put_document_data : post_document_data
-        self.arkenstone_json = response.body
         self.attributes      = JSON.parse(response.body)
         return self
       end
@@ -159,7 +156,7 @@ module Arkenstone
     end
 
     module ClassMethods
-      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_content_type, :arkenstone_hooks, :arkenstone_inherit_hooks
+      attr_accessor :arkenstone_url, :arkenstone_attributes, :arkenstone_hooks, :arkenstone_inherit_hooks
 
       ### Sets the root url used for generating RESTful requests.
       def url(new_url)
@@ -224,10 +221,6 @@ module Arkenstone
         self.arkenstone_attributes = options
         class_eval("attr_accessor :#{options.join(', :')}")
         return self.arkenstone_attributes
-      end
-
-      def content_type(new_content_type)
-        self.arkenstone_content_type = new_content_type
       end
 
       ### Constructs a new instance with the provided attributes.
@@ -300,14 +293,9 @@ module Arkenstone
 
       ### Fills in the body of a request with the appropriate serialized data.
       def set_request_data(request, data)
-        case self.arkenstone_content_type
-        when :form
-          request.set_form_data data
-        else
-          data = data.to_json unless data.class == String
-          request.body = data
-          request.content_type = 'application/json'
-        end
+        data = data.to_json unless data.class == String
+        request.body = data
+        request.content_type = 'application/json'
       end
 
       ### Sets HTTP headers on the request.

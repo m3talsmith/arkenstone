@@ -40,9 +40,11 @@ class ArkenstoneTest < Test::Unit::TestCase
   
   def test_returns_json
     user = User.build(user_options)
-    assert(user.to_json, 'user#to_json method does not exist')
-    assert(user.arkenstone_json, 'user#arkenstone_json method does not exist')
-    assert(user.to_json == user.arkenstone_json, 'does not match json')
+    json = user.to_json
+    assert(json, 'user#to_json method does not exist')
+    parsed = JSON.parse json
+    assert(parsed["name"] == user.name)
+
   end
 
   def test_attribute_changes_updates_json
@@ -51,7 +53,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     user.bearded = false
     assert(user.to_json != old_json)
     assert(user.to_json == user_options.merge(bearded: false).to_json)
-    assert(user.arkenstone_json == user.to_json)
   end
 
   def test_finds_instance_by_id
@@ -152,17 +153,8 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(model.first_name == "old")
   end
 
-  def test_set_request_data
-    user = build_user 1
-    User.arkenstone_content_type = :form
-    request = Net::HTTP::Post.new 'http://localhost'
-    User.set_request_data request, user.attributes
-    assert(request.body == 'name=John+Doe&age=18&gender=Male&bearded=true')
-  end
-
   def test_set_request_data_uses_json_by_default
     user = build_user 1
-    User.arkenstone_content_type = nil
     request = Net::HTTP::Post.new 'http://localhost'
     User.set_request_data request, user.attributes
     assert(request.content_type == 'application/json')
@@ -170,7 +162,6 @@ class ArkenstoneTest < Test::Unit::TestCase
   end
 
   def test_set_request_data_double_json
-    User.arkenstone_content_type = :json
     request = Net::HTTP::Post.new 'http://localhost'
     User.set_request_data request, {name: "test"}.to_json
     assert(request.body == '{"name":"test"}')
