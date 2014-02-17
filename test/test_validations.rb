@@ -134,4 +134,22 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     model = ArkenstoneChildValidator.new
     assert(model.valid?)
   end
+
+  def test_custom_messages
+    eval %(
+      class ArkenstoneCustomMessage
+        include Arkenstone::Validation
+
+        attr_accessor :name
+
+        validates :name, presence: true, message: "Test Message"
+      end
+    )
+
+    model = ArkenstoneCustomMessage.new
+    model.name = nil
+    assert(model.valid? == false)
+    assert(model.errors[:name] == ['Test Message'])
+  end
+
 end
