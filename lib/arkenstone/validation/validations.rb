@@ -17,7 +17,6 @@ module Arkenstone
       end
 
       # Run through all the validators. 
-      # TODO - allow passing in params to validate
       def validate
         @errors = Arkenstone::Validation::ValidationError.new
         validate_with_validators
@@ -31,7 +30,7 @@ module Arkenstone
       #     validates :name, presence: true
       #
       def validate_presence(attr, options)
-        message = options[:message] || "can't be blank"
+        message = options[:message] || "can't be blank" # TODO: create a way to store default messages
         test = options[:presence]
         method_not_defined = test != self.class.method_defined?(attr)
         if method_not_defined
@@ -156,11 +155,15 @@ module Arkenstone
           fields_for_attr = []
           self.fields_to_validate[sym] = fields_for_attr
         end
-        options_hash = Hash[*options]
+        fields_for_attr << create_validator(Hash[*options])
+      end
+
+      ### Creates a validator hash from the options passed into a `validates` method.
+      def create_validator(options_hash)
         key = options_hash.first[0]
         validator = {}
         validator[key] = options_hash
-        fields_for_attr << validator
+        validator
       end
 
     end
