@@ -30,7 +30,7 @@ module Arkenstone
 
     module InstanceMethods
       ### The convention is for all Documents to have an id. 
-      attr_accessor :id, :arkenstone_json, :arkenstone_attributes
+      attr_accessor :id, :arkenstone_attributes
 
       ### Easy access to all of the attributes defined for this Document.
       def attributes
@@ -38,7 +38,6 @@ module Arkenstone
         self.class.arkenstone_attributes.each do |key|
           new_hash[key.to_sym] = self.send("#{key}")
         end
-        self.arkenstone_json = new_hash.to_json
         new_hash
       end
 
@@ -47,7 +46,6 @@ module Arkenstone
         options.each do |key, value|
           self.send("#{key}=".to_sym, value) if self.respond_to? key
         end
-        self.arkenstone_json = attributes.to_json
         self.attributes
       end
 
@@ -60,7 +58,6 @@ module Arkenstone
       def save
         self.timestamp if self.respond_to?(:timestampable)
         response             = self.id ? put_document_data : post_document_data
-        self.arkenstone_json = response.body
         self.attributes      = JSON.parse(response.body)
         return self
       end

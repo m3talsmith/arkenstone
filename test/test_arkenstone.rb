@@ -40,9 +40,11 @@ class ArkenstoneTest < Test::Unit::TestCase
   
   def test_returns_json
     user = User.build(user_options)
-    assert(user.to_json, 'user#to_json method does not exist')
-    assert(user.arkenstone_json, 'user#arkenstone_json method does not exist')
-    assert(user.to_json == user.arkenstone_json, 'does not match json')
+    json = user.to_json
+    assert(json, 'user#to_json method does not exist')
+    parsed = JSON.parse json
+    assert(parsed["name"] == user.name)
+
   end
 
   def test_attribute_changes_updates_json
@@ -51,7 +53,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     user.bearded = false
     assert(user.to_json != old_json)
     assert(user.to_json == user_options.merge(bearded: false).to_json)
-    assert(user.arkenstone_json == user.to_json)
   end
 
   def test_finds_instance_by_id
