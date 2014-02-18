@@ -146,7 +146,7 @@ class AssociationsTest < Test::Unit::TestCase
     model = Foo::MyClass.new
     model.id = 100
     result = model.bar
-    assert(result == nil)
+    assert(result == [])
 
   end
 

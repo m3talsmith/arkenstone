@@ -17,7 +17,6 @@ module Arkenstone
       end
 
       # Run through all the validators. 
-      # TODO - allow passing in params to validate
       def validate
         @errors = Arkenstone::Validation::ValidationError.new
         validate_with_validators
@@ -30,8 +29,9 @@ module Arkenstone
       #
       #     validates :name, presence: true
       #
-      # TODO - account for custom messages 
-      def validate_presence(attr, test, message = "can't be blank")
+      def validate_presence(attr, options)
+        message = options[:message] || "can't be blank" # TODO: create a way to store default messages
+        test = options[:presence]
         method_not_defined = test != self.class.method_defined?(attr)
         if method_not_defined
           message
@@ -53,7 +53,9 @@ module Arkenstone
       # Example:
       #
       #     validates :accepts_terms, acceptance: true
-      def validate_acceptance(attr, acceptance, message = "must be #{acceptance}")
+      def validate_acceptance(attr, options)#, message = "must be #{acceptance}")
+        acceptance = options[:acceptance]
+        message = options[:message] || "must be #{acceptance}"
         val = self.send(attr)
         message if val != acceptance
       end
@@ -65,7 +67,9 @@ module Arkenstone
       #     validates :should_be_string, type: String
       #
       # That will check if `should_be_string` is a `String` or a subclass of `String`
-      def validate_type(attr, type, message = "must be type #{type}")
+      def validate_type(attr, options)#, message = "must be type #{type}")
+        type = options[:type]
+        message = options[:message] || "must be type #{type}"
         val = self.send(attr)
         unless val.nil?
           message unless val.is_a? type
@@ -76,11 +80,11 @@ module Arkenstone
       # Example:
       #
       #     validates :name, with: format: { with: /\d+/, message: "must be lowercase" }
-      def validate_format(attr, options)
+      def validate_format(attr, options)#, message = "does not match the provided format")
         val = send attr
-        regex = options[:with]
+        regex = options[:format][:with]
         if regex.match(val).nil?
-          options[:message]
+          options[:format][:message]
         end
       end
 
@@ -97,9 +101,11 @@ module Arkenstone
       def validate_with_validators
         return if self.class.fields_to_validate.nil?
         self.class.fields_to_validate.each do |attr, validators|
-          validators.each do |method, arg|
-            validation_method = "validate_#{method}"
-            result = send validation_method, attr, arg
+          validators.each do |validator_hash, arg|
+            key = validator_hash.keys.first
+            validation_method = "validate_#{key}"
+            options = validator_hash[key]
+            result = send validation_method, attr, options
             @errors.add(attr, result) unless result.nil?
           end
         end
@@ -146,10 +152,18 @@ module Arkenstone
         sym = attr.downcase.to_sym
         fields_for_attr = self.fields_to_validate[sym]
         if fields_for_attr.nil?
-          fields_for_attr = {} 
+          fields_for_attr = []
           self.fields_to_validate[sym] = fields_for_attr
         end
-        fields_for_attr.merge! Hash[*options]
+        fields_for_attr << create_validator(Hash[*options])
+      end
+
+      ### Creates a validator hash from the options passed into a `validates` method.
+      def create_validator(options_hash)
+        key = options_hash.first[0]
+        validator = {}
+        validator[key] = options_hash
+        validator
       end
 
     end

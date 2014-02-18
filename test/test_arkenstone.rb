@@ -40,9 +40,11 @@ class ArkenstoneTest < Test::Unit::TestCase
   
   def test_returns_json
     user = User.build(user_options)
-    assert(user.to_json, 'user#to_json method does not exist')
-    assert(user.arkenstone_json, 'user#arkenstone_json method does not exist')
-    assert(user.to_json == user.arkenstone_json, 'does not match json')
+    json = user.to_json
+    assert(json, 'user#to_json method does not exist')
+    parsed = JSON.parse json
+    assert(parsed["name"] == user.name)
+
   end
 
   def test_attribute_changes_updates_json
@@ -51,7 +53,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     user.bearded = false
     assert(user.to_json != old_json)
     assert(user.to_json == user_options.merge(bearded: false).to_json)
-    assert(user.arkenstone_json == user.to_json)
   end
 
   def test_finds_instance_by_id
@@ -152,17 +153,8 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(model.first_name == "old")
   end
 
-  def test_set_request_data
-    user = build_user 1
-    User.arkenstone_content_type = :form
-    request = Net::HTTP::Post.new 'http://localhost'
-    User.set_request_data request, user.attributes
-    assert(request.body == 'name=John+Doe&age=18&gender=Male&bearded=true')
-  end
-
   def test_set_request_data_uses_json_by_default
     user = build_user 1
-    User.arkenstone_content_type = nil
     request = Net::HTTP::Post.new 'http://localhost'
     User.set_request_data request, user.attributes
     assert(request.content_type == 'application/json')
@@ -170,7 +162,6 @@ class ArkenstoneTest < Test::Unit::TestCase
   end
 
   def test_set_request_data_double_json
-    User.arkenstone_content_type = :json
     request = Net::HTTP::Post.new 'http://localhost'
     User.set_request_data request, {name: "test"}.to_json
     assert(request.body == '{"name":"test"}')
@@ -233,50 +224,35 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(result == [])
   end
 
-  def test_query_url
-    url = "http://example.com/users/query"
-    assert(url == User.query_url)
-  end
+  def test_reload
+    eval %(
+      class Ball
+        include Arkenstone::Document
 
-  def test_where_with_string
-    dummy_user1 = user_options(name: 'user 1')
-    dummy_user2 = user_options(name: 'user 2')
-    stub_request(:post, "#{User.arkenstone_url}query").to_return(body: [dummy_user1,dummy_user2].to_json)
-    results = User.where '{name: "user 1"}'
-    assert(results.nil? == false)
-    assert(results.first.class == User)
-  end
+        url 'http://example.com/balls'
+        attributes :color
+      end
+    )
+    
+    stub_request(:post, Ball.arkenstone_url + '/').to_return(status: '200', body: {id: 1, color: 'blue'}.to_json)
 
-  def test_where_with_hash
-    dummy_user1 = user_options(name: 'user 1')
-    dummy_user2 = user_options(name: 'user 2')
-    stub_request(:post, "#{User.arkenstone_url}query").with(body: {name: 'user 1'}.to_json).to_return(body: [dummy_user1,dummy_user2].to_json)
-    results = User.where({name: 'user 1'})
-    assert(results.nil? == false)
-    assert(results.first.class == User)
-  end
+    ball = Ball.create(color: 'blue')
+    assert(ball.color == 'blue')
+    
+    ball.color = 'orange'
+    assert(ball.color == 'orange')
 
-  def test_where_with_block
-    dummy_user1 = user_options(name: 'user 1')
-    dummy_user2 = user_options(name: 'user 2')
-    stub_request(:post, "#{User.arkenstone_url}query").with(body: { name: 'user 1' }).to_return(body: [dummy_user1,dummy_user2].to_json)
-    results = User.where do 
-      {
-        name: 'user 1'
-      }
-    end
-    assert(results.nil? == false)
-  end
+    stub_request(:put, Ball.arkenstone_url + '/1').to_return(status: '200', body: {id: 1, color: 'orange'}.to_json)
 
-  def test_where_nil
-    result = User.where
-    assert(result.nil?)
-  end
+    ball.save
 
-  def test_where_no_results
-    stub_request(:post, "#{User.arkenstone_url}query").to_return(body: [].to_json)
-    result = User.where ''
-    assert(result == [])
+    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: {id: 1, color: 'orange'}.to_json)
+
+    ball.reload
+    assert(ball.color == 'orange')
+
+    found_ball = Ball.find(ball.id)
+    assert(found_ball.color == 'orange')
   end
 
 end
