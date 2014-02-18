@@ -156,21 +156,21 @@ class ArkenstoneTest < Test::Unit::TestCase
   def test_set_request_data_uses_json_by_default
     user = build_user 1
     request = Net::HTTP::Post.new 'http://localhost'
-    User.set_request_data request, user.attributes
+    Arkenstone::Network.set_request_data request, user.attributes
     assert(request.content_type == 'application/json')
     assert(request.body == '{"name":"John Doe","age":18,"gender":"Male","bearded":true}')
   end
 
   def test_set_request_data_double_json
     request = Net::HTTP::Post.new 'http://localhost'
-    User.set_request_data request, {name: "test"}.to_json
+    Arkenstone::Network.set_request_data request, {name: "test"}.to_json
     assert(request.body == '{"name":"test"}')
   end
 
   def test_set_request_headers_sets_headers
     request = Net::HTTP::Post.new 'http://localhost'
     headers = { 'Test' => 'foo', 'Other' => 'other' }
-    User.set_request_headers request, headers
+    Arkenstone::Network.set_request_headers request, headers
     assert(request['Test'] == 'foo')
     assert(request['Other'] == 'other')
   end
