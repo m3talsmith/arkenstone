@@ -153,7 +153,7 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(model.first_name == "old")
   end
 
-  def test_set_request_data_uses_json_by_default
+  def test_set_request_data_uses_json
     user = build_user 1
     request = Net::HTTP::Post.new 'http://localhost'
     Arkenstone::Network.set_request_data request, user.attributes

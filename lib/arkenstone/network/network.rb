@@ -2,7 +2,6 @@ module Arkenstone
   module Network
 
     class << self
-      
       ### All http requests go through here. 
       def send_request(request_env)
         http = create_http request_env.url
