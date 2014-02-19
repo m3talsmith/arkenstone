@@ -1,7 +1,29 @@
 module Arkenstone
   module Network
+    module ClassMethods
+      def send_request(url, verb, data=nil)
+        env = Arkenstone::Environment.new url: url, verb: verb, body: data
+        Arkenstone::Hook.call_request_hooks self, env
+        response = Arkenstone::Network.send_request env
+        handle_response response
+        response
+      end
+
+      ### Takes appropriate action if the request was a success or failure.
+      def handle_response(response)
+        if Arkenstone::Network.response_is_success response
+          Arkenstone::Hook.call_response_hooks self, response
+        else
+          Arkenstone::Hook.call_error_hooks self, response
+        end
+      end
+    end
 
     class << self
+      def included(base)
+        base.extend Arkenstone::Network::ClassMethods
+      end
+
       ### All http requests go through here. 
       def send_request(request_env)
         http = create_http request_env.url

@@ -24,6 +24,7 @@ module Arkenstone
         base.send :include, Arkenstone::Helpers
         base.send :include, Arkenstone::Associations
         base.send :include, Arkenstone::Document::InstanceMethods
+        base.send :include, Arkenstone::Network
         base.extend Arkenstone::Document::ClassMethods
       end
     end
@@ -260,25 +261,6 @@ module Arkenstone
         documents       = parse_all response.body
         return documents
       end
-
-      def send_request(url, verb, data=nil)
-        env = Arkenstone::Environment.new url: url, verb: verb, body: data
-        Arkenstone::Hook.call_request_hooks self, env
-        response = Arkenstone::Network.send_request env
-        handle_response response
-        response
-      end
-
-      ### Takes appropriate action if the request was a success or failure.
-      def handle_response(response)
-        if Arkenstone::Network.response_is_success response
-          Arkenstone::Hook.call_response_hooks self, response
-        else
-          Arkenstone::Hook.call_error_hooks self, response
-        end
-      end
-
-
     end
   end
 end
