@@ -354,7 +354,7 @@ module Arkenstone
       def fetch_nested_resource(nested_resource_name, &parser)
         url = build_nested_url nested_resource_name
         response = self.class.send_request url, :get
-        return [] unless self.class.response_is_success response
+        return [] unless Arkenstone::Network.response_is_success response
         klass_name = nested_resource_name.to_s.classify
         klass_name = prefix_with_class_module klass_name
         klass = Kernel.const_get klass_name 
