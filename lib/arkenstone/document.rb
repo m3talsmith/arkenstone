@@ -24,6 +24,7 @@ module Arkenstone
         base.send :include, Arkenstone::Helpers
         base.send :include, Arkenstone::Associations
         base.send :include, Arkenstone::Document::InstanceMethods
+        base.send :include, Arkenstone::Network
         base.extend Arkenstone::Document::ClassMethods
       end
     end
@@ -134,7 +135,7 @@ module Arkenstone
       ### Sends a DELETE request to the `instance_url`.
       def destroy
         resp = http_response instance_url, :delete
-        self.class.response_is_success resp
+        Arkenstone::Network.response_is_success resp
       end
 
       ### Sends a network request with the `attributes` as the body.
@@ -249,104 +250,16 @@ module Arkenstone
       ### Performs a GET request to the instance url with the supplied id. Builds an instance with the response.
       def find(id)
         url      = full_url(self.arkenstone_url) + id.to_s
-        response = self.send_request url, :get
-        return nil unless self.response_is_success response
+        response = send_request url, :get
+        return nil unless Arkenstone::Network.response_is_success response
         self.build JSON.parse(response.body)
-      end
-
-      # TODO: all of the http/network stuff is getting pretty big, I'd like to refactor it all out to its own module.
-      # All http requests go through here. 
-      def send_request(url, verb, data=nil)
-        http = create_http url
-        request_env = Arkenstone::Environment.new url: url, verb: verb, body: data
-        call_request_hooks request_env
-        request = build_request request_env.url, request_env.verb
-        set_request_data request, request_env.body
-        set_request_headers request, request_env.headers unless request_env.headers.nil?
-        response = http.request request
-        handle_response response
-        response
-      end
-
-      ### Takes appropriate action if the request was a success or failure.
-      def handle_response(response)
-        if response_is_success response
-          call_response_hooks response
-        else
-          call_error_hooks response
-        end
-      end
-
-      ### Creates the http object used for requests.
-      def create_http(url)
-        uri = URI(url)
-        http = Net::HTTP.new(uri.hostname, uri.port)
-        http.use_ssl = true if uri.scheme == 'https'
-        http
-      end
-
-      ### Builds a Net::HTTP request object for the appropriate verb.
-      def build_request(url, verb)
-        klass = Kernel.const_get("Net::HTTP").const_get(verb.capitalize)
-        klass.new URI(url)
-      end
-
-      ### Fills in the body of a request with the appropriate serialized data.
-      def set_request_data(request, data)
-        data = data.to_json unless data.class == String
-        request.body = data
-        request.content_type = 'application/json'
-      end
-
-      ### Sets HTTP headers on the request.
-      def set_request_headers(request, headers)
-        headers.each do |key, val|
-          request.add_field key, val
-        end
-      end
-
-      ### Determines if the response was successful.
-      # TODO: Refactor this to handle more status codes.
-      # TODO: How do we handle redirects (30x)? 
-      def response_is_success(response)
-        %w(200 204).include? response.code
       end
 
       ### Calls the `arkenstone_url` expecting to receive a json array of properties to deserialize into a list of objects.
       def all
-        response        = self.send_request self.arkenstone_url, :get
+        response        = send_request self.arkenstone_url, :get
         documents       = parse_all response.body
         return documents
-      end
-
-      ### Calls all of the available `before_request` hooks available for the class.
-      def call_request_hooks(request)
-        call_hook Proc.new { |h| h.before_request request }
-      end
-
-      ### Calls all of the available `after_complete` hooks available for the class.
-      def call_response_hooks(response)
-        call_hook Proc.new { |h| h.after_complete response }
-      end
-
-      ### Calls all of the available `on_error` hooks available for the class.
-      def call_error_hooks(response)
-        call_hook Proc.new { |h| h.on_error response }
-      end
-
-      ### Executes the appropriate `hook` and walks the inheritance tree if the `arkenstone_inherit_hooks` flag has been set.
-      def call_hook(enumerator)
-        hooks = []
-        if self.arkenstone_inherit_hooks == true
-          self.ancestors.each do |klass|
-            break if     klass == Arkenstone::Associations::InstanceMethods
-            break unless klass.respond_to?(:arkenstone_hooks)
-            hooks.concat klass.arkenstone_hooks unless klass.arkenstone_hooks.nil?
-          end
-        else
-          hooks = self.arkenstone_hooks
-        end
-        hooks.each(&enumerator) unless hooks.nil?
       end
     end
   end

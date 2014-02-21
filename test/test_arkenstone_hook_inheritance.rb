@@ -23,7 +23,7 @@ class ArkenstoneHookInheritanceTest < Test::Unit::TestCase
     )
     hook = TestHook.new
     BaseModel.add_hook hook
-    ChildModel.call_request_hooks nil
+    Arkenstone::Hook.call_request_hooks ChildModel, nil
     assert(hook.called)
   end
 
