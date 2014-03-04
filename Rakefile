@@ -1,3 +1,6 @@
+abort 'Arkesnstone requires Ruby >= 2.0.0. '\
+      'Please upgrade to a newer version of Ruby' if RUBY_VERSION.split('.')
+                                                     .first.to_i < 2
 require 'rake/testtask'
 
 task :build do
