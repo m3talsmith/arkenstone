@@ -220,7 +220,9 @@ module Arkenstone
       ### Sets the attributes for an Arkenstone Document. These become `attr_accessors` on instances.
       def attributes(*options)
         self.arkenstone_attributes = options
-        class_eval("attr_accessor :#{options.join(', :')}")
+        options.each do |option|
+          send(:attr_accessor, option)
+        end
         return self.arkenstone_attributes
       end
 
