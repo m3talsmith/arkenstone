@@ -1,5 +1,6 @@
 require 'net/http'
 require 'arkenstone/version'
+require 'arkenstone/errors/no_url_error'
 require 'arkenstone/enumerable/query_list'
 require 'arkenstone/network/hook'
 require 'arkenstone/network/env'

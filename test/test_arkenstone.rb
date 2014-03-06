@@ -106,6 +106,21 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.bearded == true)
   end
 
+  def test_save_throws_an_error_for_no_url
+    eval %(
+      class NoUrlModel
+        include Arkenstone::Document
+        attributes :name
+      end
+    )
+    model = NoUrlModel.new
+    model.name = 'No Save'
+    assert_raise NoUrlError do
+      model.save
+    end
+
+  end
+
   def test_creates
     stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
 
