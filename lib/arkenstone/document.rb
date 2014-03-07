@@ -57,11 +57,13 @@ module Arkenstone
 
       ### If this is a new Document, create it with a POST request, otherwise update it with a PUT.
       def save
+        self.class.check_for_url
         self.timestamp if self.respond_to?(:timestampable)
         response             = self.id ? put_document_data : post_document_data
         self.attributes      = JSON.parse(response.body)
         return self
       end
+
 
       ### Reloading the document fetches the document again by it's id
       def reload
@@ -225,6 +227,11 @@ module Arkenstone
         end
         return self.arkenstone_attributes
       end
+      
+      ### You can use Arkenstone without defining a `url`, but you won't be able to save a model without one. This raises an error if the url is not defined.
+      def check_for_url
+        raise NoUrlError.new, NoUrlError.default_message if self.arkenstone_url.nil?
+      end
 
       ### Constructs a new instance with the provided attributes.
       def build(options)
@@ -251,6 +258,7 @@ module Arkenstone
 
       ### Performs a GET request to the instance url with the supplied id. Builds an instance with the response.
       def find(id)
+        check_for_url
         url      = full_url(self.arkenstone_url) + id.to_s
         response = send_request url, :get
         return nil unless Arkenstone::Network.response_is_success response
@@ -259,6 +267,7 @@ module Arkenstone
 
       ### Calls the `arkenstone_url` expecting to receive a json array of properties to deserialize into a list of objects.
       def all
+        check_for_url
         response        = send_request self.arkenstone_url, :get
         documents       = parse_all response.body
         return documents
