@@ -45,6 +45,8 @@ module Arkenstone
       # Once `has_many` has evaluated, the structure of `Llama` will look like this:
       # 
       #     class Llama
+      #       url 'http://example.com/llamas'
+      #
       #       def cached_fleas
       #         #snip
       #       end
@@ -65,15 +67,22 @@ module Arkenstone
       #         #snip
       #       end
       #     end
-      def has_many(child_model_name)
+      #
+      # You can override the url of the association by passing in model_name: 'something'. This will change the URL it fetches from to use the `model_name` instead:
+      #   
+      #    has_many :fleas, model_name: 'bugs'
+      #
+      # Will fetch `fleas` from `http://example.com/llamas/:id/bugs.
+      def has_many(child_model_name, options = {})
         setup_arkenstone_data
+        child_url_fragment = options[:model_name] || child_model_name
 
         # The method for accessing the cached data is `cached_[name]`. If the cache is empty it creates a request to repopulate it from the server.
         cached_child_name = "cached_#{child_model_name}"
         add_association_method cached_child_name do
           cache = arkenstone_data
           if cache[child_model_name].nil?
-            child_instances = fetch_children child_model_name
+            child_instances = fetch_children child_model_name, child_url_fragment
             attach_nested_has_many_resource_methods(child_instances, child_model_name)
             cache[child_model_name] = child_instances
           end
@@ -135,15 +144,16 @@ module Arkenstone
       #     end
       #
       # If nil is passed into the setter method (`hat=` in the above example), the association is removed.
-      def has_one(child_model_name)
+      def has_one(child_model_name, options = {})
         setup_arkenstone_data
+        child_url_fragment = options[:model_name] || child_model_name
 
         # The method for accessing the cached single resource is `cached_[name]`. If the value is nil it creates a request to pull the value from the server.
         cached_child_name = "cached_#{child_model_name}"
         add_association_method cached_child_name do
           cache = arkenstone_data
           if cache[child_model_name].nil?
-            cache[child_model_name] = fetch_child child_model_name
+            cache[child_model_name] = fetch_child child_model_name, child_url_fragment
           end
           cache[child_model_name]
         end
@@ -312,15 +322,15 @@ module Arkenstone
 
     module InstanceMethods
       ### Fetches a `has_many` based resource
-      def fetch_children(child_model_name)
-        fetch_nested_resource child_model_name do |klass, response_body|
+      def fetch_children(child_model_name, child_url_fragment)
+        fetch_nested_resource child_model_name, child_url_fragment do |klass, response_body|
           klass.parse_all response_body
         end
       end
 
       ### Fetches a single `has_one` based resource
-      def fetch_child(child_model_name)
-        fetch_nested_resource child_model_name do |klass, response_body|
+      def fetch_child(child_model_name, child_url_fragment)
+        fetch_nested_resource child_model_name, child_url_fragment do |klass, response_body|
           return nil if response_body.nil? or response_body.empty?
           klass.build JSON.parse(response_body)
         end
@@ -351,8 +361,8 @@ module Arkenstone
       private
 
       ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback. 
-      def fetch_nested_resource(nested_resource_name, &parser)
-        url = build_nested_url nested_resource_name
+      def fetch_nested_resource(nested_resource_name, nested_resource_fragment = nested_resource_name, &parser)
+        url = build_nested_url nested_resource_fragment
         response = self.class.send_request url, :get
         return [] unless Arkenstone::Network.response_is_success response
         klass_name = nested_resource_name.to_s.classify
