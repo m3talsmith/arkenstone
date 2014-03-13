@@ -220,4 +220,27 @@ class AssociationsTest < Test::Unit::TestCase
     assert(freezer.bar_ids)
     assert(freezer.bar_ids.include?(bar.id))
   end
+
+  def test_allows_custom_url
+    eval %(
+      class Tool
+        include Arkenstone::Document
+        attributes :name
+        url 'http://example.com/tools'
+      end
+
+      class Garage
+        include Arkenstone::Document
+        attributes :address
+        url 'http://example.com/garages'
+
+        has_many :tools, model_name: 'derps'
+      end
+    )
+    stub_request(:get, "#{Garage.arkenstone_url}/10/derps").to_return(body: [{name: "test"},{name: "other"}].to_json)
+    g = Garage.new
+    g.id = 10
+    tools = g.tools
+    assert_equal(2, tools.count)
+  end
 end

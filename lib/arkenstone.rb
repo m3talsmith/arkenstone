@@ -14,7 +14,6 @@ require 'arkenstone/queryable'
 require 'arkenstone/document'
 require 'arkenstone/timestamps'
 require 'arkenstone/helpers'
-require 'arkenstone/yarra'
 
 module Arkenstone
   # Your code goes here...
