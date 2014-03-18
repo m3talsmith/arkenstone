@@ -30,7 +30,7 @@ module Arkenstone
       #     validates :name, presence: true
       #
       def validate_presence(attr, options)
-        message = options[:message] || "can't be blank" # TODO: create a way to store default messages
+        message = options[:message] || "can't be blank"
         test = options[:presence]
         method_not_defined = test != self.class.method_defined?(attr)
         if method_not_defined
@@ -53,7 +53,7 @@ module Arkenstone
       # Example:
       #
       #     validates :accepts_terms, acceptance: true
-      def validate_acceptance(attr, options)#, message = "must be #{acceptance}")
+      def validate_acceptance(attr, options)
         acceptance = options[:acceptance]
         message = options[:message] || "must be #{acceptance}"
         val = self.send(attr)
@@ -67,7 +67,7 @@ module Arkenstone
       #     validates :should_be_string, type: String
       #
       # That will check if `should_be_string` is a `String` or a subclass of `String`
-      def validate_type(attr, options)#, message = "must be type #{type}")
+      def validate_type(attr, options)
         type = options[:type]
         message = options[:message] || "must be type #{type}"
         val = self.send(attr)
@@ -80,7 +80,7 @@ module Arkenstone
       # Example:
       #
       #     validates :name, with: format: { with: /\d+/, message: "must be lowercase" }
-      def validate_format(attr, options)#, message = "does not match the provided format")
+      def validate_format(attr, options)
         val = send attr
         regex = options[:format][:with]
         if regex.match(val).nil?
