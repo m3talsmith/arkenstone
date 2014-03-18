@@ -48,6 +48,14 @@ module Arkenstone
         end
       end
 
+      def validate_empty(attr, options)
+        message = options[:message] || "must not be empty"
+        val = self.send(attr)
+        return message if val.nil?
+        return message if val.respond_to? :empty
+        return message if val.empty?
+      end
+
       # Checks if an attribute is the appropriate boolean value. 
       #
       # Example:
