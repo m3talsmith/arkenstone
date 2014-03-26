@@ -239,6 +239,20 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(result == [])
   end
 
+  def test_handle_error_in_save
+    eval %(
+      class Rock
+        include Arkenstone::Document
+
+        url 'http://example.com/rocks'
+        attributes :name
+      end
+    )
+    stub_request(:post, Rock.arkenstone_url + '/').to_return(status: 500, body: { error: 'derp' }.to_json)
+    rock = Rock.create(name: 'err')
+    assert_equal(false, rock.arkenstone_server_errors.nil?)
+  end
+
   def test_reload
     eval %(
       class Ball
