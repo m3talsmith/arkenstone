@@ -30,8 +30,8 @@ module Arkenstone
     end
 
     module InstanceMethods
-      ### The convention is for all Documents to have an id. 
-      attr_accessor :id, :arkenstone_attributes
+      ### The convention is for all Documents to have an id.
+      attr_accessor :id, :arkenstone_attributes, :arkenstone_server_errors
 
       ### Easy access to all of the attributes defined for this Document.
       def attributes
@@ -142,7 +142,9 @@ module Arkenstone
 
       ### Sends a network request with the `attributes` as the body.
       def http_response(url, method=:post)
-        self.class.send_request url, method, saveable_attributes
+        response = self.class.send_request url, method, saveable_attributes
+        self.arkenstone_server_errors = JSON.parse(response.body) if response.code == '500'
+        response
       end
 
       def saveable_attributes
@@ -213,7 +215,7 @@ module Arkenstone
       #
       #       inherit_hooks
       #     end
-      #       
+      #
       # This will use the hooks defined for `BaseModel` and any defined for `User` too.
       def inherit_hooks(val = true)
         self.arkenstone_inherit_hooks = val
@@ -227,7 +229,7 @@ module Arkenstone
         end
         return self.arkenstone_attributes
       end
-      
+
       ### You can use Arkenstone without defining a `url`, but you won't be able to save a model without one. This raises an error if the url is not defined.
       def check_for_url
         raise NoUrlError.new, NoUrlError.default_message if self.arkenstone_url.nil?
