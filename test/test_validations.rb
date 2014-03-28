@@ -107,6 +107,30 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     model.should_be_base = ChildThing.new
     assert(model.valid?)
   end
+  
+  def test_model_validates_confirmation
+    eval %(
+      class ArkenstoneTestConfirmation
+        include Arkenstone::Document
+        include Arkenstone::Validation
+        
+        attributes :email
+        attr_accessor :email_confirmation
+        
+        validates :email, confirmation: true
+      end
+    )
+    
+    model = ArkenstoneTestConfirmation.new
+    model.email = 'test@example.com'
+    
+    assert(!model.valid?)
+    assert_equal(["confirmation does not match email"], model.errors[:email])
+    
+    model.email_confirmation = model.email
+    
+    assert(model.valid?)
+  end
 
   def test_model_custom_validator
     eval %(

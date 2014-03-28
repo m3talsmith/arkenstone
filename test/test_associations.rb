@@ -184,6 +184,56 @@ class AssociationsTest < Test::Unit::TestCase
     assert_equal(bar.cached_freezer.id, freezer.id)
   end
 
+   def test_has_and_belongs_to_many
+     # Pending Test
+     
+     return true
+     eval %(
+       module Foo
+         class Bar
+           include Arkenstone::Document
+           url 'http://example.com/bar'
+ 
+           attributes :id
+           has_and_belongs_to_many :freezers
+         end
+
+         class Freezer
+           include Arkenstone::Document
+           url 'http://example.com/freezer'
+
+           attributes :id, :age
+           has_and_belongs_to_many :bars
+         end
+       end
+     )
+
+     stub_request(:post, "#{Foo::Freezer.arkenstone_url}/").to_return(status: '200', body: {id: 1, bar_ids: []}.to_json)
+     stub_request(:post, "#{Foo::Bar.arkenstone_url}/").to_return(status: '200', body: {id: 1, freezer_ids: [1]}.to_json)
+
+     freezer = Foo::Freezer.create({age: 30})
+     bar     = Foo::Bar.create({freezers: [freezer]})
+
+     stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200, body: freezer.merge({bar_ids: [bar.id]}).to_json)
+     stub_request(:get, "#{Foo::Bar.arkenstone_url}/1").to_return(status: 200, body: bar.merge({freezer_ids: [freezer.id]}).to_json)
+
+     assert(bar.freezer_ids.include?(freezer.id))
+     assert(freezer.bar_ids.include?(bar.id))
+
+     freezer = Foo::Freezer.find(1)
+     bar     = Foo::Bar.find(1)
+
+     assert_equal(1, freezer.bars.length)
+     assert_equal(1, bar.freezers.length)
+
+     found_freezer = bar.freezers.first
+     found_bar     = freezer.bars.first
+
+     assert_equal(freezer.to_json, found_freezer.to_json)
+     assert_equal(bar.to_json, found_bar.to_json)
+   end
+
+
   def test_handles_nested_json
     eval %(
       module Foo

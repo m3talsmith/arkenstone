@@ -24,6 +24,29 @@ module Arkenstone
       end
 
       private
+      # Loops through the provided validators. A validator is passed when a validation method returns nil. All other values are treated as errors.
+      def validate_with_validators
+        return if self.class.fields_to_validate.nil?
+        self.class.fields_to_validate.each do |attr, validators|
+          validators.each do |validator_hash, arg|
+            key = validator_hash.keys.first
+            validation_method = "validate_#{key}"
+            options = validator_hash[key]
+            result = send validation_method, attr, options
+            @errors.add(attr, result) unless result.nil?
+          end
+        end
+      end
+      
+      # Loops through all the custom validators created with `validate`.
+      def validate_with_custom_validators
+        unless self.class.custom_validators.nil?
+          self.class.custom_validators.each do |custom_validator|
+            send custom_validator
+          end
+        end
+      end
+
       # Checks if the attribute is on the instance of the model. If the attribute is a string, checks if it's empty.
       # Example:
       #
@@ -94,31 +117,29 @@ module Arkenstone
         if regex.match(val).nil?
           options[:format][:message]
         end
-      end
-
-      # Loops through all the custom validators created with `validate`.
-      def validate_with_custom_validators
-        unless self.class.custom_validators.nil?
-          self.class.custom_validators.each do |custom_validator|
-            send custom_validator
-          end
+      end    
+      
+      # Checks if the attribute is on the instance of the model. If the attribute is a string, checks if it's empty.
+      # Example:
+      #     attr_accessor :email_confirmation
+      #     attributes :email
+      #
+      #     validates :email, confirmation: true
+      #
+      def validate_confirmation(attr, options)
+        message           = options[:message] || "confirmation does not match #{attr}"
+        test              = options[:confirmation]
+        attr_confirmation = "#{attr}_confirmation".to_sym
+        
+        confirmation_not_found = test = !self.class.method_defined?(attr_confirmation) # attr_confirmation not defined
+        if confirmation_not_found
+          return message
+        else
+          val = self.send(attr)
+          return message if self.send(attr) != self.send(attr_confirmation)
         end
       end
-
-      # Loops through the provided validators. A validator is passed when a validation method returns nil. All other values are treated as errors.
-      def validate_with_validators
-        return if self.class.fields_to_validate.nil?
-        self.class.fields_to_validate.each do |attr, validators|
-          validators.each do |validator_hash, arg|
-            key = validator_hash.keys.first
-            validation_method = "validate_#{key}"
-            options = validator_hash[key]
-            result = send validation_method, attr, options
-            @errors.add(attr, result) unless result.nil?
-          end
-        end
-      end      
-
+      
     end
 
     module ClassMethods
