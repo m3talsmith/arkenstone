@@ -106,6 +106,21 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.bearded == true)
   end
 
+  def test_save_throws_an_error_for_no_url
+    eval %(
+      class NoUrlModel
+        include Arkenstone::Document
+        attributes :name
+      end
+    )
+    model = NoUrlModel.new
+    model.name = 'No Save'
+    assert_raise NoUrlError do
+      model.save
+    end
+
+  end
+
   def test_creates
     stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
 
@@ -222,6 +237,20 @@ class ArkenstoneTest < Test::Unit::TestCase
   def test_parse_all_catches_empty_json
     result = User.parse_all ''
     assert(result == [])
+  end
+
+  def test_handle_error_in_save
+    eval %(
+      class Rock
+        include Arkenstone::Document
+
+        url 'http://example.com/rocks'
+        attributes :name
+      end
+    )
+    stub_request(:post, Rock.arkenstone_url + '/').to_return(status: 500, body: { error: 'derp' }.to_json)
+    rock = Rock.create(name: 'err')
+    assert_equal(false, rock.arkenstone_server_errors.nil?)
   end
 
   def test_reload

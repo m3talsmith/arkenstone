@@ -13,6 +13,7 @@ module Arkenstone
       end
 
       def where(query = nil, &block)
+        check_for_url
         body = build_where_body query, &block
         return nil if body.nil?
         # TODO - refactor the network stuff into it's own module, so that we don't have `self` here

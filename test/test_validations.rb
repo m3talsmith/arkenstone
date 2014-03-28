@@ -26,6 +26,23 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.valid? == false)
   end
 
+  def test_model_validate_empty_array
+    eval %(
+      class ArkenstoneTestEmpty
+        include Arkenstone::Validation
+
+        attr_accessor :values
+        validates :values, empty: false
+      end
+    )
+    model = ArkenstoneTestEmpty.new
+    assert_equal false, model.valid?
+    model.values = []
+    assert_equal false, model.valid?
+    model.values = ['hi']
+    assert_equal true, model.valid?
+  end
+
   def test_model_validate_format
     eval %(
       class ArkenstoneTestLastName
