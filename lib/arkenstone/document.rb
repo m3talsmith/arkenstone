@@ -148,7 +148,7 @@ module Arkenstone
       end
 
       def saveable_attributes
-        return self.attributes if self.class.arkenstone_hooks.nil?
+        return self.attributes unless Arkenstone::Hook.has_hooks? self.class
         attrs = {}
         self.class.arkenstone_hooks.each do |hook|
           new_attrs = hook.encode_attributes(self.attributes)
