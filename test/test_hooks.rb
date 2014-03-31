@@ -32,6 +32,39 @@ class ArkenstoneHookTest < Test::Unit::TestCase
     assert(resp_hook.called, "response hook was not called")
   end
 
+  def test_has_hooks
+    eval %(
+      class BaseThing
+        include Arkenstone::Document
+        add_hook RequestHook.new
+      end
+    )
+    assert_equal(true, Arkenstone::Hook.has_hooks?(BaseThing))
+  end
+
+  def test_has_hooks_via_inheritance
+    eval %(
+      class BaseThing
+        include Arkenstone::Document
+        add_hook RequestHook.new
+      end
+
+      class ChildThing < BaseThing
+        inherit_hooks
+      end
+
+    )
+    assert_equal(true, Arkenstone::Hook.has_hooks?(ChildThing))
+  end
+
+  def test_has_hooks_negative
+    eval %(
+      class NoHooks
+      end
+    )
+    assert_equal(false, Arkenstone::Hook.has_hooks?(NoHooks))
+  end
+
   def teardown
     User.arkenstone_hooks = []
   end
