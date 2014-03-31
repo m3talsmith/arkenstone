@@ -28,6 +28,18 @@ module Arkenstone
         call_hook klass, Proc.new { |h| h.on_error response }
       end
 
+      def has_hooks?(klass)
+        return true if klass_has_hooks? klass
+        if klass.respond_to?(:arkenstone_inherit_hooks) && klass.arkenstone_inherit_hooks
+          return klass.ancestors.any? { |ancestor| klass_has_hooks? ancestor }
+        end
+        false
+      end
+
+      def klass_has_hooks?(klass)
+        klass.respond_to?(:arkenstone_hooks) and klass.arkenstone_hooks and klass.arkenstone_hooks.count > 0
+      end
+
       def call_hook(klass, enumerator)
         hooks = []
         if klass.arkenstone_inherit_hooks == true
