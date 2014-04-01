@@ -225,7 +225,7 @@ class ArkenstoneTest < Test::Unit::TestCase
     User.add_hook hook
     u = User.new
     u.saveable_attributes
-    assert(hook.called == true)
+    assert_equal(true, hook.called)
   end
 
   def test_parse_all_builds_array

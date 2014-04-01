@@ -147,10 +147,11 @@ module Arkenstone
         response
       end
 
+      ### Runs any encoding hooks on the attributes if present.
       def saveable_attributes
         return self.attributes unless Arkenstone::Hook.has_hooks? self.class
         attrs = {}
-        self.class.arkenstone_hooks.each do |hook|
+        Arkenstone::Hook.all_hooks_for_class(self.class).each do |hook|
           new_attrs = hook.encode_attributes(self.attributes)
           attrs.merge! new_attrs unless new_attrs.nil?
         end

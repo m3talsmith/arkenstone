@@ -65,6 +65,35 @@ class ArkenstoneHookTest < Test::Unit::TestCase
     assert_equal(false, Arkenstone::Hook.has_hooks?(NoHooks))
   end
 
+  def test_all_hooks_for_class_verifies_inherit_hooks
+    eval %(
+      class BaseThing
+        include Arkenstone::Document
+        add_hook ResponseHook.new
+      end
+
+      class ChildThing < BaseThing
+        add_hook RequestHook.new
+      end
+    )
+    assert_equal(1, Arkenstone::Hook.all_hooks_for_class(ChildThing).count)
+  end
+
+  def test_all_hooks_for_class_walks_the_inheritance_chain
+    eval %(
+      class BaseBaseThing
+        include Arkenstone::Document
+        add_hook ResponseHook.new
+      end
+
+      class DerpChildThing < BaseBaseThing
+        add_hook RequestHook.new
+        inherit_hooks
+      end
+    )
+    assert_equal(2, Arkenstone::Hook.all_hooks_for_class(DerpChildThing).count)
+  end
+
   def teardown
     User.arkenstone_hooks = []
   end
