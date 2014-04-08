@@ -5,7 +5,7 @@ module Arkenstone
         base.send :include, Arkenstone::Validation::InstanceMethods
         base.extend Arkenstone::Validation::ClassMethods
       end
-    end    
+    end
 
     module InstanceMethods
       attr_accessor :errors
@@ -16,7 +16,7 @@ module Arkenstone
         @errors.count == 0
       end
 
-      # Run through all the validators. 
+      # Run through all the validators.
       def validate
         @errors = Arkenstone::Validation::ValidationError.new
         validate_with_validators
@@ -37,7 +37,7 @@ module Arkenstone
           end
         end
       end
-      
+
       # Loops through all the custom validators created with `validate`.
       def validate_with_custom_validators
         unless self.class.custom_validators.nil?
@@ -79,7 +79,7 @@ module Arkenstone
         return message if val.empty?
       end
 
-      # Checks if an attribute is the appropriate boolean value. 
+      # Checks if an attribute is the appropriate boolean value.
       #
       # Example:
       #
@@ -117,8 +117,8 @@ module Arkenstone
         if regex.match(val).nil?
           options[:format][:message]
         end
-      end    
-      
+      end
+
       # Checks if the attribute is on the instance of the model. If the attribute is a string, checks if it's empty.
       # Example:
       #     attr_accessor :email_confirmation
@@ -130,16 +130,15 @@ module Arkenstone
         message           = options[:message] || "confirmation does not match #{attr}"
         test              = options[:confirmation]
         attr_confirmation = "#{attr}_confirmation".to_sym
-        
+
         confirmation_not_found = test = !self.class.method_defined?(attr_confirmation) # attr_confirmation not defined
         if confirmation_not_found
           return message
         else
-          val = self.send(attr)
+          self.send(attr)
           return message if self.send(attr) != self.send(attr_confirmation)
         end
       end
-      
     end
 
     module ClassMethods

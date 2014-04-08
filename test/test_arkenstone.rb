@@ -5,7 +5,7 @@ class DummyRequest
 end
 
 class ArkenstoneTest < Test::Unit::TestCase
-  
+
   def test_arkenstone_url_set
     eval %(
       class ArkenstoneUrlTest
@@ -32,12 +32,19 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(arkenstone.respond_to?(:age))
   end
 
+  def test_new_record
+    user = User.build user_options
+    assert_equal true, user.new_record?
+    user.id = 100
+    assert_equal false, user.new_record?
+  end
+
   def test_builds_from_params
     user = User.build(user_options)
     assert(user.class == User, "user class was not User")
     assert(user.age == 18, "user's age was not 18")
   end
-  
+
   def test_returns_json
     user = User.build(user_options)
     json = user.to_json
@@ -59,7 +66,7 @@ class ArkenstoneTest < Test::Unit::TestCase
     user_json = user_options.merge({id: 1}).to_json
     stub_request(:get, User.arkenstone_url + '1').to_return(body: user_json)
     user = User.find(1)
-    assert user 
+    assert user
     assert user.id == 1
   end
 
@@ -262,12 +269,12 @@ class ArkenstoneTest < Test::Unit::TestCase
         attributes :color
       end
     )
-    
+
     stub_request(:post, Ball.arkenstone_url + '/').to_return(status: '200', body: {id: 1, color: 'blue'}.to_json)
 
     ball = Ball.create(color: 'blue')
     assert(ball.color == 'blue')
-    
+
     ball.color = 'orange'
     assert(ball.color == 'orange')
 
