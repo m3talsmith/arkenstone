@@ -50,6 +50,11 @@ module Arkenstone
         self.attributes
       end
 
+      ### Returns true if this is a new object that has not been saved yet.
+      def new_record?
+        self.id.nil?
+      end
+
       ### Serializes the attributes to json.
       def to_json
         self.attributes.to_json
@@ -59,7 +64,7 @@ module Arkenstone
       def save
         self.class.check_for_url
         self.timestamp if self.respond_to?(:timestampable)
-        response             = self.id ? put_document_data : post_document_data
+        response             = self.new_record? ? post_document_data : put_document_data
         self.attributes      = JSON.parse(response.body)
         return self
       end
