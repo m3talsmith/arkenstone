@@ -59,8 +59,9 @@ module Arkenstone
         if klass.arkenstone_inherit_hooks == true
           klass.ancestors.each do |ancestor|
             break if     ancestor == Arkenstone::Associations::InstanceMethods
-            break unless ancestor.respond_to?(:arkenstone_hooks)
-            hooks.concat ancestor.arkenstone_hooks unless ancestor.arkenstone_hooks.nil?
+            if ancestor.respond_to? :arkenstone_hooks and !ancestor.arkenstone_hooks.nil?
+              hooks.concat ancestor.arkenstone_hooks
+            end
           end
         else
           hooks = klass.arkenstone_hooks
