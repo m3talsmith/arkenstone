@@ -1,9 +1,9 @@
 module Arkenstone
   module Network
     module ClassMethods
-      def send_request(url, verb, data=nil)
+      def send_request(url, verb, data=nil, call_hooks=true)
         env = Arkenstone::Environment.new url: url, verb: verb, body: data
-        Arkenstone::Hook.call_request_hooks self, env
+        Arkenstone::Hook.call_request_hooks self, env if call_hooks
         response = Arkenstone::Network.send_request env
         handle_response response
         response

@@ -17,7 +17,7 @@ module Arkenstone
         body = build_where_body query, &block
         return nil if body.nil?
         # TODO - refactor the network stuff into it's own module, so that we don't have `self` here
-        response = self.send_request self.query_url, :post, body
+        response = self.send_request self.query_url, :post, body, false
         parse_all response.body if Arkenstone::Network.response_is_success response
       end
 
