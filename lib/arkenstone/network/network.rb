@@ -1,9 +1,9 @@
 module Arkenstone
   module Network
     module ClassMethods
-      def send_request(url, verb, data=nil)
+      def send_request(url, verb, data=nil, call_hooks=true)
         env = Arkenstone::Environment.new url: url, verb: verb, body: data
-        Arkenstone::Hook.call_request_hooks self, env
+        Arkenstone::Hook.call_request_hooks self, env if call_hooks
         response = Arkenstone::Network.send_request env
         handle_response response
         response
@@ -24,7 +24,7 @@ module Arkenstone
         base.extend Arkenstone::Network::ClassMethods
       end
 
-      ### All http requests go through here. 
+      ### All http requests go through here.
       def send_request(request_env)
         http = create_http request_env.url
         request = build_request request_env.url, request_env.verb
@@ -35,7 +35,7 @@ module Arkenstone
 
       ### Determines if the response was successful.
       # TODO: Refactor this to handle more status codes.
-      # TODO: How do we handle redirects (30x)? 
+      # TODO: How do we handle redirects (30x)?
       def response_is_success(response)
         %w(200 204).include? response.code
       end
