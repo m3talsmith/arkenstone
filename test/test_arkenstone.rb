@@ -241,6 +241,12 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(result.count == 2)
   end
 
+  def test_parse_all_handles_object
+    obj = [{ id: 100, name: "test" }, { id: 200, name: "built" }]
+    result = User.parse_all obj
+    assert(result.count == 2)
+  end
+
   def test_parse_all_catches_empty_json
     result = User.parse_all ''
     assert(result == [])

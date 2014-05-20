@@ -250,10 +250,14 @@ module Arkenstone
         return document
       end
 
-      ### Builds a list of objects with attributes set from a JSON string.
-      def parse_all(json)
-        return [] if json.nil? or json.empty?
-        tree = JSON.parse json
+      ### Builds a list of objects with attributes set from a JSON string or an array.
+      def parse_all(to_parse)
+        return [] if to_parse.nil? or to_parse.empty?
+        if to_parse.is_a? String
+          tree = JSON.parse to_parse
+        else
+          tree = to_parse
+        end
         documents = tree.map {|document| self.build document}
         Arkenstone::QueryList.new documents
       end
