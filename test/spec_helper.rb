@@ -1,4 +1,4 @@
-require 'test/unit'
+require 'minitest/autorun'
 require 'webmock/test_unit'
 
 # Add in some pry debuggin niceties
