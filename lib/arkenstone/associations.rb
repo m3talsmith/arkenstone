@@ -43,7 +43,7 @@ module Arkenstone
       #     end
       #
       # Once `has_many` has evaluated, the structure of `Llama` will look like this:
-      # 
+      #
       #     class Llama
       #       url 'http://example.com/llamas'
       #
@@ -56,7 +56,7 @@ module Arkenstone
       #       end
       #
       #       def flea_ids
-      #         [...] # all the ids of the fleas 
+      #         [...] # all the ids of the fleas
       #       end
       #
       #       def add_flea(new_flea)
@@ -69,28 +69,29 @@ module Arkenstone
       #     end
       #
       # You can override the url of the association by passing in model_name: 'something'. This will change the URL it fetches from to use the `model_name` instead:
-      #   
+      #
       #    has_many :fleas, model_name: 'bugs'
       #
       # Will fetch `fleas` from `http://example.com/llamas/:id/bugs.
       def has_many(child_model_name, options = {})
         setup_arkenstone_data
         child_url_fragment = options[:model_name] || child_model_name
+        child_class_name = options[:class_name] || child_model_name
 
         # The method for accessing the cached data is `cached_[name]`. If the cache is empty it creates a request to repopulate it from the server.
         cached_child_name = "cached_#{child_model_name}"
         add_association_method cached_child_name do
           cache = arkenstone_data
           if cache[child_model_name].nil?
-            child_instances = fetch_children child_model_name, child_url_fragment
-            attach_nested_has_many_resource_methods(child_instances, child_model_name)
+            child_instances = fetch_children child_class_name, child_url_fragment
+            attach_nested_has_many_resource_methods(child_instances, child_model_name, child_class_name)
             cache[child_model_name] = child_instances
           end
           cache[child_model_name]
         end
 
         # The uncached version is the name supplied to has_many. It wipes the cache for the association and refetches it.
-        add_association_method child_model_name do 
+        add_association_method child_model_name do
           self.wipe_arkenstone_cache child_model_name
           self.send cached_child_name
         end
@@ -122,7 +123,7 @@ module Arkenstone
       #
       #     class Hat
       #     end
-      #    
+      #
       #     class Llama
       #       has_one :hat
       #     end
@@ -200,7 +201,7 @@ module Arkenstone
         setup_arkenstone_data
 
         parent_model_field = "#{parent_model_name}_id"
-        
+
         self.arkenstone_attributes = [] unless self.arkenstone_attributes
         self.arkenstone_attributes << parent_model_field.to_sym
         class_eval("attr_accessor :#{parent_model_field}")
@@ -249,7 +250,7 @@ module Arkenstone
           join_klass.send :belongs_to, model_klass_name
           join_klass.send :belongs_to, current_klass_name
         end
-      
+
         # This class should belong to the join table
         self.send(:has_many, join_klass_pluralized.to_sym) unless self.respond_to?(join_klass_pluralized.to_sym)
 
@@ -260,7 +261,7 @@ module Arkenstone
         self.send :attr_accessor, cached_instances_field.to_sym
 
         # Creates a `self.join_through_instances` helper method
-        # 
+        #
         # This actually pulls instances of the join model and then maps on the
         # complimenting foreign key to gather all the foreign join instances
         #
@@ -311,7 +312,7 @@ module Arkenstone
           current_klass_instance.send "#{cached_instances_field}=", elements
         end
       end
-      
+
       # Adds a method to a class unless that method is already defined.
       def add_association_method(method_name, &method_definition)
         unless method_defined? method_name
@@ -360,20 +361,20 @@ module Arkenstone
 
       private
 
-      ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback. 
+      ### Creates the network request for fetching a child resource. Hands parsing the response off to a callback.
       def fetch_nested_resource(nested_resource_name, nested_resource_fragment = nested_resource_name, &parser)
         url = build_nested_url nested_resource_fragment
         response = self.class.send_request url, :get
         return [] unless Arkenstone::Network.response_is_success response
         klass_name = nested_resource_name.to_s.classify
         klass_name = prefix_with_class_module klass_name
-        klass = Kernel.const_get klass_name 
+        klass = Kernel.const_get klass_name
         parser[klass, response.body]
       end
 
       # If the class is in a module, preserve the module namespace.
       # Example:
-      #     
+      #
       #     # for the class Zoo::Llama
       #     prefix_with_class_module('Hat') # 'Zoo::Hat'
       def prefix_with_class_module(klass)

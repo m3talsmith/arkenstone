@@ -64,7 +64,7 @@ class AssociationsTest < Test::Unit::TestCase
       @dummy_things = [{"id" => 200, "name" => "dummy data"}]
       { code: 200 }
     end
-    
+
     assert(AssociatedUser.method_defined? :remove_thing)
     bad_thing = Thing.new
     bad_thing.id = 100
@@ -164,7 +164,7 @@ class AssociationsTest < Test::Unit::TestCase
         class Freezer
           include Arkenstone::Document
           url 'http://example.com/freezer'
-          
+
           attributes :id, :age
           has_many :bars
         end
@@ -179,21 +179,21 @@ class AssociationsTest < Test::Unit::TestCase
 
     stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200, body: freezer.to_json)
 
-    assert_equal(freezer.id, bar.freezer_id) 
+    assert_equal(freezer.id, bar.freezer_id)
     assert_equal(freezer.to_json, bar.freezer.to_json)
     assert_equal(bar.cached_freezer.id, freezer.id)
   end
 
    def test_has_and_belongs_to_many
      # Pending Test
-     
+
      return true
      eval %(
        module Foo
          class Bar
            include Arkenstone::Document
            url 'http://example.com/bar'
- 
+
            attributes :id
            has_and_belongs_to_many :freezers
          end
@@ -248,7 +248,7 @@ class AssociationsTest < Test::Unit::TestCase
         class Freezer
           include Arkenstone::Document
           url 'http://example.com/freezer'
-          
+
           attributes :id, :age
           has_many :bars
         end
@@ -292,5 +292,24 @@ class AssociationsTest < Test::Unit::TestCase
     g.id = 10
     tools = g.tools
     assert_equal(2, tools.count)
+  end
+
+  def test_has_many_custom_class
+    eval %(
+      class Organization
+        include Arkenstone::Document
+        attributes :name
+        url 'http://example.com/organizations'
+
+        has_many :child_organizations, class_name: :organization, model_name: 'descendents'
+      end
+    )
+    url = "#{Organization.arkenstone_url}/10/descendents"
+    children = [{name: 'child 1'},{name: 'child 2'}]
+    stub_request(:get, url).to_return(body: children.to_json)
+    parent = Organization.new
+    parent.id = 10
+    child_orgs = parent.child_organizations
+    assert_equal(2, child_orgs.count)
   end
 end
