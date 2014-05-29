@@ -45,7 +45,8 @@ module Arkenstone
       ### Set attributes for a Document. If a key in the `options` hash is not present in the attributes list, it is ignored.
       def attributes=(options)
         options.each do |key, value|
-          self.send("#{key}=".to_sym, value) if self.respond_to? key
+          setter = "#{key}="
+          self.send(setter.to_sym, value) if self.respond_to? setter
         end
         self.attributes
       end
