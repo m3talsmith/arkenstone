@@ -98,6 +98,23 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.id == 1, 'user does not have an id')
   end
 
+  def test_dont_set_readonly_attribute
+    eval %(
+      class ReadOnlyAttrs
+        include Arkenstone::Document
+        attributes :name
+
+        def readonly
+          'oh hi'
+        end
+      end
+    )
+    obj = ReadOnlyAttrs.new
+    vals = { name: 'my name', readonly: 'uh oh' }
+    obj.attributes = vals
+    assert_equal('oh hi', obj.readonly)
+  end
+
   def test_save_current_record
     user = User.build user_options.merge({id: 1, bearded: false})
     assert(user.bearded != true)
