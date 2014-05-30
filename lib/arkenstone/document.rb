@@ -61,7 +61,7 @@ module Arkenstone
         self.attributes.to_json
       end
 
-      ### If this is a new Document, create it with a POST request, otherwise update it with a PUT.
+      ### If this is a new Document, create it with a POST request, otherwise update it with a PUT. Returns whether the server response was successful or not.
       def save
         self.class.check_for_url
         self.timestamp if self.respond_to?(:timestampable)
