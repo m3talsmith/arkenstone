@@ -67,7 +67,7 @@ module Arkenstone
         self.timestamp if self.respond_to?(:timestampable)
         response             = self.new_record? ? post_document_data : put_document_data
         self.attributes      = JSON.parse(response.body)
-        return self
+        return Arkenstone::Network.response_is_success response
       end
 
 
@@ -267,6 +267,7 @@ module Arkenstone
       def create(options)
         document = self.build(options)
         document.save
+        document
       end
 
       ### Performs a GET request to the instance url with the supplied id. Builds an instance with the response.
