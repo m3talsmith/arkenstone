@@ -94,8 +94,14 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(!user.id, 'user has an id')
 
     stub_request(:post, User.arkenstone_url).to_return(body: user_options.merge({id: 1}).to_json)
-    user.save
+    assert_equal(true, user.save)
     assert(user.id == 1, 'user does not have an id')
+  end
+
+  def test_save_is_false_for_server_error
+    user = User.build user_options
+    stub_request(:post, User.arkenstone_url).to_return(body: {message: 'oh no'}.to_json, status: 500)
+    assert_equal(false, user.save)
   end
 
   def test_dont_set_readonly_attribute
