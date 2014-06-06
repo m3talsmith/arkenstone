@@ -259,8 +259,14 @@ module Arkenstone
         else
           tree = to_parse
         end
+        tree = ensure_parseable_is_array tree
         documents = tree.map {|document| self.build document}
         Arkenstone::QueryList.new documents
+      end
+
+      def ensure_parseable_is_array(to_parse)
+        to_parse = [to_parse] if to_parse.is_a? Hash
+        to_parse
       end
 
       ### Creates and saves a single instance with the attribute values provided.
