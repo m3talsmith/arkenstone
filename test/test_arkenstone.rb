@@ -270,6 +270,13 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(result.count == 2)
   end
 
+  def test_parse_all_treats_single_object_as_array
+    obj = { id: 100, name: 'test' }
+    result = User.parse_all obj.to_json
+    assert_equal(1, result.count)
+    assert_equal('test', result.first.name)
+  end
+
   def test_parse_all_catches_empty_json
     result = User.parse_all ''
     assert(result == [])
