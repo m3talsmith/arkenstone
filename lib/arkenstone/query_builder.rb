@@ -3,7 +3,7 @@ module Arkenstone
   # = Builder
   # Builds up the query from the DSL and returns a ruby hash.
   class QueryBuilder
-  
+
     ### Initializes the @hash variable, which is used to build complex queries.
     def initialize
       @cache = {}
@@ -61,6 +61,11 @@ module Arkenstone
     ### Adds include statements for the database endpoint to parse.
     def _include(values)
       @cache = evaluate_expression "$include", values
+    end
+
+    ### Sets a max number of results to return.
+    def _limit(max)
+      @cache = evaluate_expression "$limit", max
     end
 
     private
