@@ -75,6 +75,16 @@ class QueryBuilderTest < Test::Unit::TestCase
     assert_equal %q({"$include":["Foo","Bar"],"foo":"foo"}), json
   end
 
+  def test_limit
+    json = @builder.build do
+      _limit 5
+      {
+        foo: 'foo'
+      }
+    end
+    assert_equal %q({"$limit":5,"foo":"foo"}), json
+  end
+
   def test_complex_include_with_booleans
     json = @builder.build do
       _include ['DocDataElement','Document']
