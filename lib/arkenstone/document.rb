@@ -70,7 +70,6 @@ module Arkenstone
         return Arkenstone::Network.response_is_success response
       end
 
-
       ### Reloading the document fetches the document again by it's id
       def reload
         reloaded_self = self.class.find(self.id)
@@ -88,24 +87,8 @@ module Arkenstone
 
       ### Update multiple attributes at once. Performs validation (if that is setup for this document).
       def update_attributes(new_attributes)
-        original_attrs = self.attributes.clone
         self.attributes = self.attributes.merge! new_attributes
-        if has_validation_method?
-          save_if_valid original_attrs
-        else
-          self.save
-        end
-      end
-
-      # If a model passes validation, it is saved, otherwise the original attributes (`original_attrs`) are reset.
-      # Assumes there is a validation method defined for the Document.
-      def save_if_valid(original_attrs)
-        if self.valid?
-          self.save
-        else
-          self.attributes = original_attrs
-          false
-        end
+        self.save
       end
 
       ### Checks if there is a `valid?` method.
