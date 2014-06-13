@@ -181,23 +181,6 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.age == 24, 'user#age is not eq 24')
   end
 
-  def test_update_attributes_with_validation
-    eval %(
-      class ArkenstoneTestVal
-        include Arkenstone::Document
-        include Arkenstone::Validation
-
-        attributes :first_name
-        validates :first_name, presence: true
-      end
-    )
-    model = ArkenstoneTestVal.new
-    model.first_name = "old"
-    result = model.update_attributes({first_name: nil})
-    assert(result == false)
-    assert(model.first_name == "old")
-  end
-
   def test_set_request_data_uses_json
     user = build_user 1
     request = Net::HTTP::Post.new 'http://localhost'
