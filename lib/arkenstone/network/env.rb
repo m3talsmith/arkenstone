@@ -1,4 +1,6 @@
 module Arkenstone
+  # Environment is a wrapper around most of the properties created in a network request. 
+  # A raw net/http object doesn't allow for much customization after it is instantiated. This allows the caller to manipulate data via hooks before a request is created.
   class Environment
     attr_accessor :url, :verb, :body, :headers
 
