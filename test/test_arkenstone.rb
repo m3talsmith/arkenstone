@@ -279,6 +279,14 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert_equal(false, rock.arkenstone_server_errors.nil?)
   end
 
+  def test_dup
+    u = User.build user_options
+    u.id = 1337
+    dup_u = u.dup
+    dup_u.attributes.each { |key, value| assert_equal value, u.attributes[key] }
+    assert_equal nil, dup_u.id
+  end
+
   def test_reload
     eval %(
       class Ball

@@ -147,6 +147,13 @@ module Arkenstone
         attrs.empty? ? self.attributes : attrs
       end
 
+      ### Creates a deep dupe of the document with the id set to nil
+      def dup
+        duped = super
+        duped.id = nil
+        duped
+      end
+
       private
     end
 
