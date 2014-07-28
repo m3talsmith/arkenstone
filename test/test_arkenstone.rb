@@ -51,7 +51,13 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(json, 'user#to_json method does not exist')
     parsed = JSON.parse json
     assert(parsed["name"] == user.name)
+  end
 
+  def test_to_json_accepts_options
+    # This case was added to give backwards compatibility to rails render_json
+    user = User.build(user_options)
+    assert(user.to_json, 'user#to_json fails without options')
+    assert(user.to_json(key: 'value'), 'user#to_json fails with options')
   end
 
   def test_attribute_changes_updates_json

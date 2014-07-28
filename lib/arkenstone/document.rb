@@ -57,8 +57,8 @@ module Arkenstone
       end
 
       ### Serializes the attributes to json.
-      def to_json
-        self.attributes.to_json
+      def to_json(options={})
+        self.attributes.to_json(options)
       end
 
       ### If this is a new Document, create it with a POST request, otherwise update it with a PUT. Returns whether the server response was successful or not.
