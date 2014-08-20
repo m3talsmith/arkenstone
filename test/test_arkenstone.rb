@@ -45,6 +45,11 @@ class ArkenstoneTest < Test::Unit::TestCase
     assert(user.age == 18, "user's age was not 18")
   end
 
+  def tests_builds_from_nil_params
+    user = User.build(nil)
+    assert(user.class == User, "user class was not User")
+  end
+
   def test_returns_json
     user = User.build(user_options)
     json = user.to_json

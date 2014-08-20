@@ -235,7 +235,7 @@ module Arkenstone
       ### Constructs a new instance with the provided attributes.
       def build(options)
         document = self.new
-        document.attributes = options.select do |key, value|
+        document.attributes = Hash(options).select do |key, _value|
           document.respond_to? :"#{key}="
         end
         return document
