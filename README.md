@@ -1,5 +1,3 @@
-*Lasciate ogne speranza, voi ch'intrate*
-
 # Arkenstone [![Build Status](https://travis-ci.org/RevSpringPhoenix/arkenstone.png?branch=master)](https://travis-ci.org/RevSpringPhoenix/arkenstone) [![Code Climate](https://codeclimate.com/github/RevSpringPhoenix/arkenstone.png)](https://codeclimate.com/github/RevSpringPhoenix/arkenstone)
 
 
