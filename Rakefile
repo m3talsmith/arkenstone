@@ -16,6 +16,11 @@ task package: :build do
   system "gem push --key github --host https://rubygems.pkg.github.com/m3talsmith arkenstone-#{Arkenstone::VERSION}.gem"
 end
 
+task :analyze do
+  system 'rubocop -A'
+  system 'flog -g lib'
+end
+
 Rake::TestTask.new do |t|
   t.libs << 'test'
   t.libs << 'test/test_associations'
