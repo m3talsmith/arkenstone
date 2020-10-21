@@ -1,7 +1,5 @@
 dist: focal
 language: ruby
-rvm:
-  - 2.7.1
 branches:
   except:
     - documentation
