@@ -1,4 +1,4 @@
-# Arkenstone [![Build Status](https://travis-ci.org/RevSpringPhoenix/arkenstone.png?branch=master)](https://travis-ci.org/RevSpringPhoenix/arkenstone) [![Code Climate](https://codeclimate.com/github/RevSpringPhoenix/arkenstone.png)](https://codeclimate.com/github/RevSpringPhoenix/arkenstone)
+# Arkenstone [![Build Status](https://travis-ci.org/m3talsmith/arkenstone.svg?branch=development)](https://travis-ci.org/m3talsmith/arkenstone) [![Maintainability](https://api.codeclimate.com/v1/badges/a0f3b07d272fcf220475/maintainability)](https://codeclimate.com/github/m3talsmith/arkenstone/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/a0f3b07d272fcf220475/test_coverage)](https://codeclimate.com/github/m3talsmith/arkenstone/test_coverage)
 
 Arkenstone is a replacement for [ActiveRecord](http://api.rubyonrails.org/classes/ActiveRecord/Base.html) that uses RESTful services to get and store data.
 
