@@ -7,10 +7,10 @@ Gem::Specification.new do |spec|
   spec.name          = "arkenstone"
   spec.version       = Arkenstone::VERSION
   spec.authors       = ["Michael Christenson II", "Steve Young", "Scott Williams", "Brett Byler"]
-  spec.email         = ["mchristenson@revspringinc.com"]
+  spec.email         = ["m3talsmith@gmail.com"]
   spec.description   = "An ActiveRecord replacement over REST"
   spec.summary       = "A drop-in replacement for ActiveRecord that performs CRUD operations over RESTful URLs."
-  spec.homepage      = "https://github.com/RevSpringPhoenix/arkenstone"
+  spec.homepage      = "https://github.com/m3talsmith/arkenstone"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
@@ -18,8 +18,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.3"
-  spec.add_development_dependency "rake", '~>10'
+  spec.add_development_dependency "bundler", "~> 2.1"
+  spec.add_development_dependency "rake", '~> 10'
   spec.add_runtime_dependency "activesupport", '~> 4.0'
 
   spec.required_ruby_version = '>= 2.0'
