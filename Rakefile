@@ -8,7 +8,7 @@ task :build do
   system 'gem build arkenstone.gemspec'
 end
 
-task :package do
+task package: :build do
   system "gem push --key github --host https://rubygems.pkg.github.com/m3talsmith arkenstone-#{Arkenstone::VERSION}.gem"
 end
 
