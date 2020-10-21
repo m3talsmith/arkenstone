@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    arkenstone (1.0.2)
+    arkenstone (1.1.1)
       activesupport (>= 5.0)
 
 GEM
