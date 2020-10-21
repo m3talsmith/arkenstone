@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
 group :test do
-  gem 'minitest', '4.7.5' # Using the old version so that tests don't break
-  gem 'webmock', '~> 1.16.0'
+  gem 'minitest', '~> 5.14.2' # Using the old version so that tests don't break
+  gem 'webmock', '~> 3.9.3'
   gem 'pry'
   gem 'pry-nav'
 end

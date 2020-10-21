@@ -15,7 +15,7 @@ class AssociationsTest < Test::Unit::TestCase
     @dummy_resource = {"id" => 50, "name" => "Resource 1"}
     stub_request(:get, "#{AssociatedUser.arkenstone_url}100/resource").to_return do |req|
       if @dummy_resource.nil?
-        { code: 200 }
+        { status: 200 }
       else
         { body: @dummy_resource.to_json }
       end
@@ -49,7 +49,7 @@ class AssociationsTest < Test::Unit::TestCase
   def test_has_many_creates_add_child
     stub_request(:post, "#{AssociatedUser.arkenstone_url}100/things").to_return do |req|
       @dummy_things << {"id" => 500, "name" => "new thing"}
-      { code: 200 }
+      { status: 200 }
     end
     assert(AssociatedUser.method_defined? :add_thing)
     new_thing = Thing.new
@@ -62,7 +62,7 @@ class AssociationsTest < Test::Unit::TestCase
   def test_has_many_creates_remove_child
     stub_request(:delete, "#{AssociatedUser.arkenstone_url}100/things/100").to_return do |req|
       @dummy_things = [{"id" => 200, "name" => "dummy data"}]
-      { code: 200 }
+      { status: 200 }
     end
 
     assert(AssociatedUser.method_defined? :remove_thing)
@@ -95,7 +95,7 @@ class AssociationsTest < Test::Unit::TestCase
   end
 
   def test_has_one_can_delete_an_association
-    stub_request(:delete, "#{AssociatedUser.arkenstone_url}100/resource/50").to_return(code: 200)
+    stub_request(:delete, "#{AssociatedUser.arkenstone_url}100/resource/50").to_return(status: 200)
     @model.resource = nil
     @dummy_resource = nil
     assert(@model.resource == nil)
