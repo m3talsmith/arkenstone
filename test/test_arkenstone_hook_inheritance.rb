@@ -1,16 +1,16 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 class TestHook < Arkenstone::Hook
   attr_accessor :called
 
-  def before_request(req)
+  def before_request(_req)
     @called = true
   end
 end
 
-
 class ArkenstoneHookInheritanceTest < Test::Unit::TestCase
-
   def test_hooks_do_inheritance
     eval %(
       class BaseModel
@@ -36,5 +36,4 @@ class ArkenstoneHookInheritanceTest < Test::Unit::TestCase
     )
     assert(ArkenstoneHookAttr.arkenstone_inherit_hooks)
   end
-
 end

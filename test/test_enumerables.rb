@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 class EnumerableTests < Test::Unit::TestCase
@@ -19,12 +21,12 @@ class EnumerableTests < Test::Unit::TestCase
 
     list = Arkenstone::QueryList.new [dummy, dummy2]
     result = list.to_json
-    assert_equal(result, %q([{"name":"test","id":100},{"name":"test2","id":101}]))
+    assert_equal(result, '[{"name":"test","id":100},{"name":"test2","id":101}]')
   end
 
   def test_initialize_takes_array
-    list = Arkenstone::QueryList.new [10,20]
-    assert_equal([10,20], list)
+    list = Arkenstone::QueryList.new [10, 20]
+    assert_equal([10, 20], list)
   end
 
   def test_initialize_takes_element

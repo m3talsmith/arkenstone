@@ -1,6 +1,10 @@
-abort 'Arkesnstone development requires Ruby >= 2.7.1. '\
-      'Please upgrade to a newer version of Ruby' if RUBY_VERSION.split('.')
-                                                     .first.to_i < 2
+# frozen_string_literal: true
+
+if RUBY_VERSION.split('.')
+               .first.to_i < 2
+  abort 'Arkesnstone development requires Ruby >= 2.7.1. '\
+        'Please upgrade to a newer version of Ruby'
+end
 require 'rake/testtask'
 require './lib/arkenstone/version'
 
@@ -18,4 +22,4 @@ Rake::TestTask.new do |t|
 end
 
 desc 'Run tests'
-task :default => :test
+task default: :test

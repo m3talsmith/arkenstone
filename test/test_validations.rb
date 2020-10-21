@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 class ArkenstoneValidationTest < Test::Unit::TestCase
@@ -16,13 +18,13 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     model = ArkenstoneTestFirstName.new
     model.first_name = nil
     assert(model.valid? == false)
-    model.first_name = "test"
+    model.first_name = 'test'
     assert(model.valid?)
   end
 
   def test_model_validate_presence_empty_string
     model = ArkenstoneTestFirstName.new
-    model.first_name = ""
+    model.first_name = ''
     assert(model.valid? == false)
   end
 
@@ -49,13 +51,13 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
         include Arkenstone::Validation
 
         attr_accessor :last_name
-        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }      
+        validates :last_name, format: { with: /[a-z]+/, message: "must be lowercase" }
       end
     )
     model = ArkenstoneTestLastName.new
-    model.last_name = "ABC"
+    model.last_name = 'ABC'
     assert(model.valid? == false)
-    model.last_name = "abc"
+    model.last_name = 'abc'
     assert(model.valid?)
   end
 
@@ -84,7 +86,7 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     )
 
     model = ArkenstoneTestType.new
-    model.should_be_string = "hi"
+    model.should_be_string = 'hi'
     assert(model.valid?)
     model.should_be_string = 100
     assert(model.valid? == false)
@@ -107,28 +109,28 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     model.should_be_base = ChildThing.new
     assert(model.valid?)
   end
-  
+
   def test_model_validates_confirmation
     eval %(
       class ArkenstoneTestConfirmation
         include Arkenstone::Document
         include Arkenstone::Validation
-        
+
         attributes :email
         attr_accessor :email_confirmation
-        
+
         validates :email, confirmation: true
       end
     )
-    
+
     model = ArkenstoneTestConfirmation.new
     model.email = 'test@example.com'
-    
+
     assert(!model.valid?)
-    assert_equal(["confirmation does not match email"], model.errors[:email])
-    
+    assert_equal(['confirmation does not match email'], model.errors[:email])
+
     model.email_confirmation = model.email
-    
+
     assert(model.valid?)
   end
 
@@ -192,5 +194,4 @@ class ArkenstoneValidationTest < Test::Unit::TestCase
     assert(model.valid? == false)
     assert(model.errors[:name] == ['Test Message'])
   end
-
 end

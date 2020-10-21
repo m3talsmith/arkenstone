@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 class ArkenstoneEnvTest < Test::Unit::TestCase
@@ -9,5 +11,4 @@ class ArkenstoneEnvTest < Test::Unit::TestCase
     assert(@env.url == 'http://example.com')
     assert(@env.verb == :get)
   end
-
 end

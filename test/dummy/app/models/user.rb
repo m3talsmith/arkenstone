@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User
   include Arkenstone::Document
   include Arkenstone::Timestamps

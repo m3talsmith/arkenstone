@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Arkenstone
   module Network
     module ClassMethods
-      def send_request(url, verb, data=nil, call_hooks=true)
+      def send_request(url, verb, data = nil, call_hooks = true)
         env = Arkenstone::Environment.new url: url, verb: verb, body: data
         Arkenstone::Hook.call_request_hooks self, env if call_hooks
         response = Arkenstone::Network.send_request env
@@ -37,7 +39,7 @@ module Arkenstone
       # TODO: Refactor this to handle more status codes.
       # TODO: How do we handle redirects (30x)?
       def response_is_success(response)
-        %w(200 204).include? response.code
+        %w[200 204].include? response.code
       end
 
       ### Creates the http object used for requests.
@@ -50,7 +52,7 @@ module Arkenstone
 
       ### Builds a Net::HTTP request object for the appropriate verb.
       def build_request(url, verb)
-        klass = Kernel.const_get("Net::HTTP").const_get(verb.capitalize)
+        klass = Kernel.const_get('Net::HTTP').const_get(verb.capitalize)
         klass.new URI(url)
       end
 

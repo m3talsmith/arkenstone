@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 class DocumentOverridesTest < Test::Unit::TestCase
@@ -18,19 +20,19 @@ class DocumentOverridesTest < Test::Unit::TestCase
         belongs_to :brand
       end
     )
-    
-    stub_request(:post, Brand.arkenstone_url + '/').to_return(status: '200', body: {id: 1, name: 'Foo'}.to_json)
+
+    stub_request(:post, Brand.arkenstone_url + '/').to_return(status: '200', body: { id: 1, name: 'Foo' }.to_json)
     stub_request(:get, Brand.arkenstone_url + '/1/balls').to_return(status: 200, body: [].to_json)
 
     brand = Brand.create(name: 'Foo')
     assert(!brand.arkenstone_data[:balls])
 
-    stub_request(:post, Brand.arkenstone_url + '/1/balls/').to_return(status: '200', body: {id: 1, color: 'blue', brand_id: brand.id}.to_json)
+    stub_request(:post, Brand.arkenstone_url + '/1/balls/').to_return(status: '200', body: { id: 1, color: 'blue', brand_id: brand.id }.to_json)
 
     ball = brand.balls.create(color: 'blue')
     assert(brand.arkenstone_data[:balls])
 
-    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: {id: 1, color: 'blue', brand_id: brand.id}.to_json)
+    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: { id: 1, color: 'blue', brand_id: brand.id }.to_json)
     ball.reload
 
     assert(ball.color == 'blue')

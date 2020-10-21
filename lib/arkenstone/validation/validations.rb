@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Arkenstone
   module Validation
     class << self
@@ -13,7 +15,7 @@ module Arkenstone
       ### Does a model's attributes pass all of the validation requirements?
       def valid?
         validate
-        @errors.count == 0
+        @errors.count.zero?
       end
 
       # Run through all the validators.
@@ -24,11 +26,13 @@ module Arkenstone
       end
 
       private
+
       # Loops through the provided validators. A validator is passed when a validation method returns nil. All other values are treated as errors.
       def validate_with_validators
         return if self.class.fields_to_validate.nil?
+
         self.class.fields_to_validate.each do |attr, validators|
-          validators.each do |validator_hash, arg|
+          validators.each do |validator_hash, _arg|
             key = validator_hash.keys.first
             validation_method = "validate_#{key}"
             options = validator_hash[key]
@@ -40,10 +44,8 @@ module Arkenstone
 
       # Loops through all the custom validators created with `validate`.
       def validate_with_custom_validators
-        unless self.class.custom_validators.nil?
-          self.class.custom_validators.each do |custom_validator|
-            send custom_validator
-          end
+        self.class.custom_validators&.each do |custom_validator|
+          send custom_validator
         end
       end
 
@@ -59,21 +61,18 @@ module Arkenstone
         if method_not_defined
           message
         else
-          val = self.send(attr)
+          val = send(attr)
           value_is_nil = test == val.nil?
-          if value_is_nil
-            return message
-          end
+          return message if value_is_nil
+
           value_is_string = val.class == String
-          if value_is_string and val.empty?
-            return message
-          end
+          message if value_is_string && val.empty?
         end
       end
 
       def validate_empty(attr, options)
-        message = options[:message] || "must not be empty"
-        val = self.send(attr)
+        message = options[:message] || 'must not be empty'
+        val = send(attr)
         return message if val.nil?
         return message if val.respond_to? :empty
         return message if val.empty?
@@ -87,7 +86,7 @@ module Arkenstone
       def validate_acceptance(attr, options)
         acceptance = options[:acceptance]
         message = options[:message] || "must be #{acceptance}"
-        val = self.send(attr)
+        val = send(attr)
         message if val != acceptance
       end
 
@@ -101,7 +100,7 @@ module Arkenstone
       def validate_type(attr, options)
         type = options[:type]
         message = options[:message] || "must be type #{type}"
-        val = self.send(attr)
+        val = send(attr)
         unless val.nil?
           message unless val.is_a? type
         end
@@ -114,9 +113,7 @@ module Arkenstone
       def validate_format(attr, options)
         val = send attr
         regex = options[:format][:with]
-        if regex.match(val).nil?
-          options[:format][:message]
-        end
+        options[:format][:message] if regex.match(val).nil?
       end
 
       # Checks if the attribute is on the instance of the model. If the attribute is a string, checks if it's empty.
@@ -133,16 +130,15 @@ module Arkenstone
 
         confirmation_not_found = test = !self.class.method_defined?(attr_confirmation) # attr_confirmation not defined
         if confirmation_not_found
-          return message
+          message
         else
-          self.send(attr)
-          return message if self.send(attr) != self.send(attr_confirmation)
+          send(attr)
+          return message if send(attr) != send(attr_confirmation)
         end
       end
     end
 
     module ClassMethods
-
       class << self
         def extended(base)
           base.fields_to_validate = {}
@@ -164,8 +160,8 @@ module Arkenstone
       #       end
       #     end
       def validate(custom_validation_method)
-        self.custom_validators = [] if self.custom_validators.nil?
-        self.custom_validators << custom_validation_method
+        self.custom_validators = [] if custom_validators.nil?
+        custom_validators << custom_validation_method
       end
 
       # Adds one of the provided validators to an attribute. Specify the validator in the `options` splat.
@@ -176,12 +172,12 @@ module Arkenstone
       #   validates :email, with: format: { with: /[a-z]+/, message: "must be valid email" }
       # end
       def validates(attr, *options)
-        self.fields_to_validate = {} if self.fields_to_validate.nil?
+        self.fields_to_validate = {} if fields_to_validate.nil?
         sym = attr.downcase.to_sym
-        fields_for_attr = self.fields_to_validate[sym]
+        fields_for_attr = fields_to_validate[sym]
         if fields_for_attr.nil?
           fields_for_attr = []
-          self.fields_to_validate[sym] = fields_for_attr
+          fields_to_validate[sym] = fields_for_attr
         end
         fields_for_attr << create_validator(Hash[*options])
       end
@@ -193,8 +189,6 @@ module Arkenstone
         validator[key] = options_hash
         validator
       end
-
     end
-
   end
 end

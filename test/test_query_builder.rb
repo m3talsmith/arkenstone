@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 class QueryBuilderTest < Test::Unit::TestCase
-
   def setup
     @builder = Arkenstone::QueryBuilder.new
   end
@@ -9,20 +10,20 @@ class QueryBuilderTest < Test::Unit::TestCase
   def test_build_find_with_one_param
     json = @builder.build do
       {
-        foo: "foo"
+        foo: 'foo'
       }
     end
 
-    assert_equal %q({"foo":"foo"}), json
+    assert_equal '{"foo":"foo"}', json
   end
 
   def test_build_find_in
     json = @builder.build do
       {
-        foo: _in(%w(foo bar))
+        foo: _in(%w[foo bar])
       }
     end
-    assert_equal %q({"foo":{"$in":["foo","bar"]}}), json
+    assert_equal '{"foo":{"$in":["foo","bar"]}}', json
   end
 
   def test_query_find_comparison
@@ -31,48 +32,48 @@ class QueryBuilderTest < Test::Unit::TestCase
         foo: _gt(500)
       }
     end
-    assert_equal %q({"foo":{"$gt":500}}), json
+    assert_equal '{"foo":{"$gt":500}}', json
   end
 
   def test_query_complex_find
     json = @builder.build do
       {
-        foo: "foo",
-        bar: _in(%w(foo bar)),
+        foo: 'foo',
+        bar: _in(%w[foo bar]),
         baz: _gt(400)
       }
     end
-    assert_equal %q({"foo":"foo","bar":{"$in":["foo","bar"]},"baz":{"$gt":400}}), json
+    assert_equal '{"foo":"foo","bar":{"$in":["foo","bar"]},"baz":{"$gt":400}}', json
   end
 
   def test_query_and
     json = @builder.build do
       _and(
-        {foo: "foo"},
-        {bar: "bar"}
+        { foo: 'foo' },
+        { bar: 'bar' }
       )
     end
-    assert_equal %q({"$and":[{"foo":"foo"},{"bar":"bar"}]}), json
+    assert_equal '{"$and":[{"foo":"foo"},{"bar":"bar"}]}', json
   end
 
   def test_query_and_with_gt
     json = @builder.build do
       _and(
-        { foo: _gt(200)},
-        { foo: _lt(300)}
+        { foo: _gt(200) },
+        { foo: _lt(300) }
       )
     end
-    assert_equal %q({"$and":[{"foo":{"$gt":200}},{"foo":{"$lt":300}}]}), json
+    assert_equal '{"$and":[{"foo":{"$gt":200}},{"foo":{"$lt":300}}]}', json
   end
 
   def test_include
     json = @builder.build do
-      _include ['Foo', 'Bar']
+      _include %w[Foo Bar]
       {
         foo: 'foo'
       }
     end
-    assert_equal %q({"$include":["Foo","Bar"],"foo":"foo"}), json
+    assert_equal '{"$include":["Foo","Bar"],"foo":"foo"}', json
   end
 
   def test_limit
@@ -82,24 +83,24 @@ class QueryBuilderTest < Test::Unit::TestCase
         foo: 'foo'
       }
     end
-    assert_equal %q({"$limit":5,"foo":"foo"}), json
+    assert_equal '{"$limit":5,"foo":"foo"}', json
   end
 
   def test_complex_include_with_booleans
     json = @builder.build do
-      _include ['DocDataElement','Document']
+      _include %w[DocDataElement Document]
       _or(
         _and(
-          { "DocDataElement.Name" => "AccountNumber" },
-          { "Value" => "123456" }
+          { 'DocDataElement.Name' => 'AccountNumber' },
+          { 'Value' => '123456' }
         ),
         _and(
-          { "DocDataElement.Name" => "Zip" },
-          { "Value" => "55555" }
+          { 'DocDataElement.Name' => 'Zip' },
+          { 'Value' => '55555' }
         )
       )
     end
-    assert_equal %q({"$include":["DocDataElement","Document"],"$or":[{"$and":[{"DocDataElement.Name":"AccountNumber"},{"Value":"123456"}]},{"$and":[{"DocDataElement.Name":"Zip"},{"Value":"55555"}]}]}), json
+    assert_equal '{"$include":["DocDataElement","Document"],"$or":[{"$and":[{"DocDataElement.Name":"AccountNumber"},{"Value":"123456"}]},{"$and":[{"DocDataElement.Name":"Zip"},{"Value":"55555"}]}]}', json
   end
 
   def test_query_not
@@ -107,24 +108,24 @@ class QueryBuilderTest < Test::Unit::TestCase
       _or(
         _and(
           { foo: _gt(200) },
-          { bar: "bar" }
+          { bar: 'bar' }
         ),
         _not(
-          { baz: "derp" }
+          { baz: 'derp' }
         )
       )
     end
-    assert_equal %q({"$or":[{"$and":[{"foo":{"$gt":200}},{"bar":"bar"}]},{"$not":[{"baz":"derp"}]}]}), json
+    assert_equal '{"$or":[{"$and":[{"foo":{"$gt":200}},{"bar":"bar"}]},{"$not":[{"baz":"derp"}]}]}', json
   end
 
   def test_query_or
     json = @builder.build do
       _or(
         { foo: _gt(200) },
-        { bar: "bar" }
+        { bar: 'bar' }
       )
     end
-    assert_equal %q({"$or":[{"foo":{"$gt":200}},{"bar":"bar"}]}), json
+    assert_equal '{"$or":[{"foo":{"$gt":200}},{"bar":"bar"}]}', json
   end
 
   def test_query_complex_and
@@ -132,31 +133,30 @@ class QueryBuilderTest < Test::Unit::TestCase
       _or(
         _and(
           { foo: _gt(200) },
-          { bar: "bar" }
+          { bar: 'bar' }
         ),
         _and(
-          { derp: "derp" }
+          { derp: 'derp' }
         )
       )
     end
-    assert_equal %q({"$or":[{"$and":[{"foo":{"$gt":200}},{"bar":"bar"}]},{"$and":[{"derp":"derp"}]}]}), json
+    assert_equal '{"$or":[{"$and":[{"foo":{"$gt":200}},{"bar":"bar"}]},{"$and":[{"derp":"derp"}]}]}', json
   end
 
   def test_query_is_idempotent
     json = @builder.build do
       _and(
         { foo: _gt(200) },
-        { bar: "bar" }
+        { bar: 'bar' }
       )
     end
-    assert_equal %q({"$and":[{"foo":{"$gt":200}},{"bar":"bar"}]}), json
+    assert_equal '{"$and":[{"foo":{"$gt":200}},{"bar":"bar"}]}', json
     json = @builder.build do
       _and(
         { foo: _gt(200) },
-        { derp: "derp derp" }
+        { derp: 'derp derp' }
       )
     end
-    assert_equal %q({"$and":[{"foo":{"$gt":200}},{"derp":"derp derp"}]}), json
+    assert_equal '{"$and":[{"foo":{"$gt":200}},{"derp":"derp derp"}]}', json
   end
-
 end

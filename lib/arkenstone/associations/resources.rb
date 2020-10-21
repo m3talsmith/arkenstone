@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Arkenstone
   module Associations
     module Resources
@@ -26,7 +28,7 @@ module Arkenstone
           nested_resources.define_singleton_method(:arkenstone_nested_class) { nested_klass }
           nested_resources.define_singleton_method(:arkenstone_nested_resource_name) { nested_resource_name }
           nested_resources.extend HasManySingletonMethods
-          return nested_resources
+          nested_resources
         end
       end
 
@@ -54,13 +56,13 @@ module Arkenstone
 
         def build(options)
           parent_id                 = "#{arkenstone_parent_instance.class.to_s.demodulize.underscore}_id"
-          new_resource              = arkenstone_nested_class.build(options.merge({parent_id => arkenstone_parent_instance.id}))
+          new_resource              = arkenstone_nested_class.build(options.merge({ parent_id => arkenstone_parent_instance.id }))
           parent_resource_instances = arkenstone_parent_instance.send arkenstone_nested_resource_name.to_sym
 
           parent_resource_instances << new_resource
           arkenstone_parent_instance.send "#{arkenstone_nested_resource_name}=", parent_resource_instances
 
-          return new_resource
+          new_resource
         end
 
         def create(options)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Arkenstone
   module Validation
     class ValidationError
@@ -27,7 +29,6 @@ module Arkenstone
           errors_for_attr << message
         end
       end
-
     end
   end
 end

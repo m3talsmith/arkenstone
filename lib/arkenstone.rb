@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'arkenstone/version'
 require 'arkenstone/errors/no_url_error'

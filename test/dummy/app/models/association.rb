@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'user'
 
 class Thing
@@ -31,4 +33,3 @@ class AssociatedUser < User
     'on AssociatedUser'
   end
 end
-

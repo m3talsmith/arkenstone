@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Arkenstone
   module Helpers
     class << self
@@ -9,7 +11,7 @@ module Arkenstone
 
     module GeneralMethods
       def full_url(url)
-        url =~ /(\/$)/ ? url : "#{url}/"
+        url =~ %r{(/$)} ? url : "#{url}/"
       end
     end
   end

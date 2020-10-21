@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 
 module Arkenstone
@@ -37,7 +39,7 @@ module Arkenstone
       def attributes
         new_hash = {}
         self.class.arkenstone_attributes.each do |key|
-          new_hash[key.to_sym] = self.send("#{key}")
+          new_hash[key.to_sym] = send(key.to_s)
         end
         new_hash
       end
@@ -46,49 +48,49 @@ module Arkenstone
       def attributes=(options)
         options.each do |key, value|
           setter = "#{key}="
-          self.send(setter.to_sym, value) if self.respond_to? setter
+          send(setter.to_sym, value) if respond_to? setter
         end
-        self.attributes
+        attributes
       end
 
       ### Returns true if this is a new object that has not been saved yet.
       def new_record?
-        self.id.nil?
+        id.nil?
       end
 
       ### Serializes the attributes to json.
-      def to_json(options={})
-        self.attributes.to_json(options)
+      def to_json(options = {})
+        attributes.to_json(options)
       end
 
       ### If this is a new Document, create it with a POST request, otherwise update it with a PUT. Returns whether the server response was successful or not.
       def save
         self.class.check_for_url
-        self.timestamp if self.respond_to?(:timestampable)
-        response             = self.new_record? ? post_document_data : put_document_data
+        timestamp if respond_to?(:timestampable)
+        response             = new_record? ? post_document_data : put_document_data
         self.attributes      = JSON.parse(response.body)
-        return Arkenstone::Network.response_is_success response
+        Arkenstone::Network.response_is_success response
       end
 
       ### Reloading the document fetches the document again by it's id
       def reload
-        reloaded_self = self.class.find(self.id)
+        reloaded_self = self.class.find(id)
         self.attributes = reloaded_self.attributes
-        return self
+        self
       end
 
-      alias_method :save!, :save
+      alias save! save
 
       ### Update a single attribute. Performs validation (by calling `update_attributes`).
       def update_attribute(key, value)
         hash = { key.to_sym => value }
-        self.update_attributes hash
+        update_attributes hash
       end
 
       ### Update multiple attributes at once. Performs validation (if that is setup for this document).
       def update_attributes(new_attributes)
-        self.attributes = self.attributes.merge! new_attributes
-        self.save
+        self.attributes = attributes.merge! new_attributes
+        save
       end
 
       ### Checks if there is a `valid?` method.
@@ -130,7 +132,7 @@ module Arkenstone
       end
 
       ### Sends a network request with the `attributes` as the body.
-      def http_response(url, method=:post)
+      def http_response(url, method = :post)
         response = self.class.send_request url, method, saveable_attributes
         self.arkenstone_server_errors = JSON.parse(response.body) if response.code == '500'
         response
@@ -138,13 +140,14 @@ module Arkenstone
 
       ### Runs any encoding hooks on the attributes if present.
       def saveable_attributes
-        return self.attributes unless Arkenstone::Hook.has_hooks? self.class
+        return attributes unless Arkenstone::Hook.has_hooks? self.class
+
         attrs = {}
         Arkenstone::Hook.all_hooks_for_class(self.class).each do |hook|
-          new_attrs = hook.encode_attributes(self.attributes)
+          new_attrs = hook.encode_attributes(attributes)
           attrs.merge! new_attrs unless new_attrs.nil?
         end
-        attrs.empty? ? self.attributes : attrs
+        attrs.empty? ? attributes : attrs
       end
 
       ### Creates a deep dupe of the document with the id set to nil
@@ -153,8 +156,6 @@ module Arkenstone
         duped.id = nil
         duped
       end
-
-      private
     end
 
     module ClassMethods
@@ -187,8 +188,8 @@ module Arkenstone
       #       add_hook ErrorLogger.new
       #     end
       def add_hook(hook)
-        self.arkenstone_hooks = [] if self.arkenstone_hooks.nil?
-        self.arkenstone_hooks << hook
+        self.arkenstone_hooks = [] if arkenstone_hooks.nil?
+        arkenstone_hooks << hook
       end
 
       # Hooks are applied **only** to the class they are added to. This can cause a problem if you have a base class and want to use the same hooks for subclasses. If you want to use the same hooks as a parent class, use `inherit_hooks`. This will tell Arkenstone to walk up the inheritance chain and call all of the hooks it can find.
@@ -224,33 +225,34 @@ module Arkenstone
         options.each do |option|
           send(:attr_accessor, option)
         end
-        return self.arkenstone_attributes
+        arkenstone_attributes
       end
 
       ### You can use Arkenstone without defining a `url`, but you won't be able to save a model without one. This raises an error if the url is not defined.
       def check_for_url
-        raise NoUrlError.new, NoUrlError.default_message if self.arkenstone_url.nil?
+        raise NoUrlError.new, NoUrlError.default_message if arkenstone_url.nil?
       end
 
       ### Constructs a new instance with the provided attributes.
       def build(options)
-        document = self.new
+        document = new
         document.attributes = Hash(options).select do |key, _value|
           document.respond_to? :"#{key}="
         end
-        return document
+        document
       end
 
       ### Builds a list of objects with attributes set from a JSON string or an array.
       def parse_all(to_parse)
-        return [] if to_parse.nil? or to_parse.empty?
-        if to_parse.is_a? String
-          tree = JSON.parse to_parse
-        else
-          tree = to_parse
-        end
+        return [] if to_parse.nil? || to_parse.empty?
+
+        tree = if to_parse.is_a? String
+                 JSON.parse to_parse
+               else
+                 to_parse
+               end
         tree = ensure_parseable_is_array tree
-        documents = tree.map {|document| self.build document}
+        documents = tree.map { |document| build document }
         Arkenstone::QueryList.new documents
       end
 
@@ -261,7 +263,7 @@ module Arkenstone
 
       ### Creates and saves a single instance with the attribute values provided.
       def create(options)
-        document = self.build(options)
+        document = build(options)
         document.save
         document
       end
@@ -269,20 +271,20 @@ module Arkenstone
       ### Performs a GET request to the instance url with the supplied id. Builds an instance with the response.
       def find(id)
         check_for_url
-        url      = full_url(self.arkenstone_url) + id.to_s
+        url      = full_url(arkenstone_url) + id.to_s
         response = send_request url, :get
         return nil unless Arkenstone::Network.response_is_success response
-        self.build JSON.parse(response.body)
+
+        build JSON.parse(response.body)
       end
 
       ### Calls the `arkenstone_url` expecting to receive a json array of properties to deserialize into a list of objects.
       def all
         check_for_url
-        response        = send_request self.arkenstone_url, :get
+        response        = send_request arkenstone_url, :get
         documents       = parse_all response.body
-        return documents
+        documents
       end
     end
   end
 end
-
