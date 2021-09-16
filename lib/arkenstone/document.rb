@@ -3,7 +3,7 @@
 require 'json'
 
 module Arkenstone
-  # # Document
+  # == Document
   #
   # A `Document` is the main entry point for Arkenstone. A `Document` is a model that is retrieved and/or stored on a RESTful service. For example, if you have a web service that has a URL structure like:
   #
