@@ -14,6 +14,7 @@ end
 group :development do
   gem 'flog'
   gem 'rubocop'
+  gem 'yard'
 end
 
 # Specify your gem's dependencies in arkenstone.gemspec

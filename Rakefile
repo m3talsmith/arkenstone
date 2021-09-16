@@ -22,7 +22,7 @@ task :analyze do
 end
 
 task :docs do
-  system 'rdoc --main README.md'
+  system 'yard doc'
 end
 
 Rake::TestTask.new do |t|
