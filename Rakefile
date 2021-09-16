@@ -28,6 +28,8 @@ end
 Rake::TestTask.new do |t|
   t.libs << 'test'
   t.libs << 'test/test_associations'
+  t.verbose = false
+  t.warning = false
 end
 
 desc 'Run tests'
