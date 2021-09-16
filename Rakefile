@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 if RUBY_VERSION.split('.')
-               .first.to_i < 2
-  abort 'Arkesnstone development requires Ruby >= 2.7.1. '\
+               .first.to_i < 3
+  abort 'Arkenstone development requires Ruby >= 3.0.2. '\
         'Please upgrade to a newer version of Ruby'
 end
 require 'rake/testtask'
@@ -19,6 +19,10 @@ end
 task :analyze do
   system 'rubocop -A'
   system 'flog -g lib'
+end
+
+task :docs do
+  system 'rdoc --main README.md'
 end
 
 Rake::TestTask.new do |t|
