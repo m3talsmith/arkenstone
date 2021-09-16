@@ -1,5 +1,16 @@
 dist: focal
+env:
+  global:
+    - CC_TEST_REPORTER_ID=8d9ccf963273f583d380d4e2b97da731c25d77bb4784151ea4a6ec27bbbdaf22
 language: ruby
+rvm:
+  - 3.0.2
 branches:
   except:
     - documentation
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
