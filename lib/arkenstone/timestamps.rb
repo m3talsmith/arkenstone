@@ -10,6 +10,7 @@ module Arkenstone
 
     module InstanceMethods
       attr_accessor :created_at, :updated_at
+
       def timestampable
         true
       end

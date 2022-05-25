@@ -89,7 +89,7 @@ module Arkenstone
 
       ### Update multiple attributes at once. Performs validation (if that is setup for this document).
       def update_attributes(new_attributes)
-        self.attributes = attributes.merge! new_attributes
+        attributes.merge! new_attributes
         save
       end
 
@@ -215,7 +215,7 @@ module Arkenstone
       #     end
       #
       # This will use the hooks defined for `BaseModel` and any defined for `User` too.
-      def inherit_hooks(val = true)
+      def inherit_hooks(val: true)
         self.arkenstone_inherit_hooks = val
       end
 
@@ -281,9 +281,8 @@ module Arkenstone
       ### Calls the `arkenstone_url` expecting to receive a json array of properties to deserialize into a list of objects.
       def all
         check_for_url
-        response        = send_request arkenstone_url, :get
-        documents       = parse_all response.body
-        documents
+        response = send_request arkenstone_url, :get
+        parse_all response.body
       end
     end
   end

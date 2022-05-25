@@ -14,7 +14,7 @@ class QueryableTests < Test::Unit::TestCase
     stub_request(:post, "#{User.arkenstone_url}query").to_return(body: [dummy_user1, dummy_user2].to_json)
     results = User.where '{name: "user 1"}'
     assert(results.nil? == false)
-    assert(results.first.class == User)
+    assert(results.first.instance_of?(User))
   end
 
   def test_where_with_hash
@@ -23,7 +23,7 @@ class QueryableTests < Test::Unit::TestCase
     stub_request(:post, "#{User.arkenstone_url}query").with(body: { name: 'user 1' }.to_json).to_return(body: [dummy_user1, dummy_user2].to_json)
     results = User.where({ name: 'user 1' })
     assert(results.nil? == false)
-    assert(results.first.class == User)
+    assert(results.first.instance_of?(User))
   end
 
   def test_where_with_block

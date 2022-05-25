@@ -285,7 +285,7 @@ module Arkenstone
               element_current_klass_instances = element.send(current_klass_pluralized)
 
               # Push the current_klass_instance to what element currently has
-              element_current_klass_instances = element_current_klass_instances.push(current_klass_instance)
+              element_current_klass_instances.push(current_klass_instance)
 
               # Save the new stack of current_klass_instances with element
               element.send "#{current_klass_pluralized}=", element_current_klass_instances

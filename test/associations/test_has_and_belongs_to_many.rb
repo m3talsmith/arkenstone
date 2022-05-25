@@ -34,8 +34,8 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
     assert(BrewMaster::Tag.new.respond_to?(:beer_tags))
     assert(BrewMaster::Beer.new.respond_to?(:beer_tags))
 
-    stub_request(:post, BrewMaster::Tag.arkenstone_url + '/').to_return(status: '200', body: { id: 1 }.to_json)
-    stub_request(:post, BrewMaster::Beer.arkenstone_url + '/').to_return(status: '200', body: { id: 1 }.to_json)
+    stub_request(:post, "#{BrewMaster::Tag.arkenstone_url}/").to_return(status: '200', body: { id: 1 }.to_json)
+    stub_request(:post, "#{BrewMaster::Beer.arkenstone_url}/").to_return(status: '200', body: { id: 1 }.to_json)
 
     %w[blonde pale ipa hot sour].each do |tag|
       BrewMaster::Tag.create(name: tag)
@@ -60,14 +60,14 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
     assert(beer.tags.include?(tag))
     assert(tag.beers.include?(beer))
 
-    stub_request(:put, BrewMaster::Tag.arkenstone_url + '/1').to_return(status: '200', body: { id: 1 }.to_json)
-    stub_request(:put, BrewMaster::Beer.arkenstone_url + '/1').to_return(status: '200', body: { id: 1 }.to_json)
+    stub_request(:put, "#{BrewMaster::Tag.arkenstone_url}/1").to_return(status: '200', body: { id: 1 }.to_json)
+    stub_request(:put, "#{BrewMaster::Beer.arkenstone_url}/1").to_return(status: '200', body: { id: 1 }.to_json)
 
     beer.save
     tag.save
 
-    stub_request(:get, BrewMaster::Tag.arkenstone_url + '/1').to_return(status: 200, body: { id: 1 }.to_json)
-    stub_request(:get, BrewMaster::Beer.arkenstone_url + '/1').to_return(status: 200, body: { id: 1 }.to_json)
+    stub_request(:get, "#{BrewMaster::Tag.arkenstone_url}/1").to_return(status: 200, body: { id: 1 }.to_json)
+    stub_request(:get, "#{BrewMaster::Beer.arkenstone_url}/1").to_return(status: 200, body: { id: 1 }.to_json)
 
     beer.reload
     tag.reload

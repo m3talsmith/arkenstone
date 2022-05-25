@@ -5,7 +5,7 @@ module Arkenstone
   class QueryList < Array
     ### If an array is provided, concatenate it onto the instance so that it becomes one long array. Otherwise, push it on.
     def initialize(initial_value)
-      if initial_value.class == Array
+      if initial_value.instance_of?(Array)
         concat initial_value
       else
         push initial_value

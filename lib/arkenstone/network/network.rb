@@ -58,7 +58,7 @@ module Arkenstone
 
       ### Fills in the body of a request with the appropriate serialized data.
       def set_request_data(request, data)
-        data = data.to_json unless data.class == String
+        data = data.to_json unless data.instance_of?(String)
         request.body = data
         request.content_type = 'application/json'
       end

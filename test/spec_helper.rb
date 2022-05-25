@@ -12,5 +12,5 @@ require 'simplecov'
 SimpleCov.start
 
 # Make a simple document for test cases.
-require_relative '../lib/arkenstone.rb'
+require_relative '../lib/arkenstone'
 Dir['./test/dummy/app/models/**/*.rb'].sort.each { |f| require f }

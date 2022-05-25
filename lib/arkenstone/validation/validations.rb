@@ -65,7 +65,7 @@ module Arkenstone
           value_is_nil = test == val.nil?
           return message if value_is_nil
 
-          value_is_string = val.class == String
+          value_is_string = val.instance_of?(String)
           message if value_is_string && val.empty?
         end
       end

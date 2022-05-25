@@ -42,13 +42,13 @@ class ArkenstoneTest < Test::Unit::TestCase
 
   def test_builds_from_params
     user = User.build(user_options)
-    assert(user.class == User, 'user class was not User')
+    assert(user.instance_of?(User), 'user class was not User')
     assert(user.age == 18, "user's age was not 18")
   end
 
   def tests_builds_from_nil_params
     user = User.build(nil)
-    assert(user.class == User, 'user class was not User')
+    assert(user.instance_of?(User), 'user class was not User')
   end
 
   def test_returns_json
@@ -76,14 +76,14 @@ class ArkenstoneTest < Test::Unit::TestCase
 
   def test_finds_instance_by_id
     user_json = user_options.merge({ id: 1 }).to_json
-    stub_request(:get, User.arkenstone_url + '1').to_return(body: user_json)
+    stub_request(:get, "#{User.arkenstone_url}1").to_return(body: user_json)
     user = User.find(1)
     assert user
     assert user.id == 1
   end
 
   def test_instance_not_found_is_nil
-    stub_request(:any, User.arkenstone_url + '1').to_return(body: '', status: 404)
+    stub_request(:any, "#{User.arkenstone_url}1").to_return(body: '', status: 404)
     user = User.find 1
     assert_nil user
   end
@@ -285,7 +285,7 @@ class ArkenstoneTest < Test::Unit::TestCase
         attributes :name
       end
     )
-    stub_request(:post, Rock.arkenstone_url + '/').to_return(status: 500, body: { error: 'derp' }.to_json)
+    stub_request(:post, "#{Rock.arkenstone_url}/").to_return(status: 500, body: { error: 'derp' }.to_json)
     rock = Rock.create(name: 'err')
     assert_equal(false, rock.arkenstone_server_errors.nil?)
   end
@@ -308,7 +308,7 @@ class ArkenstoneTest < Test::Unit::TestCase
       end
     )
 
-    stub_request(:post, Ball.arkenstone_url + '/').to_return(status: '200', body: { id: 1, color: 'blue' }.to_json)
+    stub_request(:post, "#{Ball.arkenstone_url}/").to_return(status: '200', body: { id: 1, color: 'blue' }.to_json)
 
     ball = Ball.create(color: 'blue')
     assert(ball.color == 'blue')
@@ -316,11 +316,11 @@ class ArkenstoneTest < Test::Unit::TestCase
     ball.color = 'orange'
     assert(ball.color == 'orange')
 
-    stub_request(:put, Ball.arkenstone_url + '/1').to_return(status: '200', body: { id: 1, color: 'orange' }.to_json)
+    stub_request(:put, "#{Ball.arkenstone_url}/1").to_return(status: '200', body: { id: 1, color: 'orange' }.to_json)
 
     ball.save
 
-    stub_request(:get, Ball.arkenstone_url + '/1').to_return(status: 200, body: { id: 1, color: 'orange' }.to_json)
+    stub_request(:get, "#{Ball.arkenstone_url}/1").to_return(status: 200, body: { id: 1, color: 'orange' }.to_json)
 
     ball.reload
     assert(ball.color == 'orange')

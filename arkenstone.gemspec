@@ -23,5 +23,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '>= 13.0.1'
   spec.add_runtime_dependency 'activesupport', '>= 5.0'
 
-  spec.required_ruby_version = '>= 2.0'
+  spec.required_ruby_version = '>= 3.0'
 end

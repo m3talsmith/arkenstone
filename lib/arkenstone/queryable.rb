@@ -24,9 +24,9 @@ module Arkenstone
       end
 
       def build_where_body(query = nil, &block)
-        if query.class == String
+        if query.instance_of?(String)
           body = query
-        elsif query.class == Hash
+        elsif query.instance_of?(Hash)
           body = query.to_json
         elsif query.nil? && block_given?
           builder = Arkenstone::QueryBuilder.new

@@ -4,9 +4,9 @@ source 'https://rubygems.org'
 
 group :test do
   gem 'minitest', '~> 5.14.2'
-  gem 'simplecov', require: false
   gem 'pry'
   gem 'pry-nav'
+  gem 'simplecov', require: false
   gem 'test-unit' # test-unit was removed from ruby in version 2.2.0
   gem 'webmock', '~> 3.9.3'
 end
