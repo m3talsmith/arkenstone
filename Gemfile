@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 
 group :test do
-  gem 'minitest', '~> 5.14.2'
+  gem 'minitest'
   gem 'pry'
   gem 'pry-nav'
   gem 'simplecov', require: false
