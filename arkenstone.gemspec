@@ -5,11 +5,11 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'arkenstone/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'arkenstone'
+  spec.name          = 'arkenstone-open'
   spec.version       = Arkenstone::VERSION
   spec.authors       = ['Michael Christenson II', 'Steve Young', 'Scott Williams', 'Brett Byler']
   spec.email         = ['m3talsmith@gmail.com']
-  spec.description   = 'An ActiveRecord replacement over REST'
+  spec.description   = 'An Open Source ActiveRecord replacement over REST'
   spec.summary       = 'A drop-in replacement for ActiveRecord that performs CRUD operations over RESTful URLs.'
   spec.homepage      = 'https://github.com/m3talsmith/arkenstone'
   spec.license       = 'MIT'

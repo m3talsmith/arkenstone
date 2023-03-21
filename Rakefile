@@ -13,7 +13,7 @@ task :build do
 end
 
 task package: :build do
-  system "gem push --key github --host https://rubygems.pkg.github.com/m3talsmith arkenstone-#{Arkenstone::VERSION}.gem"
+  system "gem push arkenstone-open-#{Arkenstone::VERSION}.gem"
 end
 
 task :analyze do
