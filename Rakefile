@@ -2,7 +2,7 @@
 
 if RUBY_VERSION.split('.')
                .first.to_i < 3
-  abort 'Arkenstone development requires Ruby >= 3.0.2. '\
+  abort 'Arkenstone development requires Ruby >= 3.0.2. ' \
         'Please upgrade to a newer version of Ruby'
 end
 require 'rake/testtask'

@@ -13,4 +13,4 @@ SimpleCov.start
 
 # Make a simple document for test cases.
 require_relative '../lib/arkenstone'
-Dir['./test/dummy/app/models/**/*.rb'].sort.each { |f| require f }
+Dir['./test/dummy/app/models/**/*.rb'].each { |f| require f }

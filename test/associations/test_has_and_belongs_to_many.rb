@@ -43,7 +43,9 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
 
     beer = BrewMaster::Beer.create(brand: 'Full Sail', filtered: false)
 
-    stub_request(:post, "#{BrewMaster::Tag.arkenstone_url}/query").with(body: { name: 'ipa' }.to_json).to_return(body: [{ id: 1, name: 'ipa' }].to_json)
+    stub_request(:post,
+                 "#{BrewMaster::Tag.arkenstone_url}/query").with(body: { name: 'ipa' }.to_json).to_return(body: [{ id: 1,
+                                                                                                                   name: 'ipa' }].to_json)
 
     tag = BrewMaster::Tag.where(name: 'ipa').first
 

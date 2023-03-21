@@ -200,7 +200,7 @@ module Arkenstone
 
         self.arkenstone_attributes = [] unless arkenstone_attributes
         arkenstone_attributes << parent_model_field.to_sym
-        class_eval("attr_accessor :#{parent_model_field}")
+        class_eval("attr_accessor :#{parent_model_field}", __FILE__, __LINE__)
 
         # The method for accessing the cached data is `cached_[name]`. If the cache is empty it creates a request to repopulate it from the server.
         cached_parent_model_name = "cached_#{parent_model_name}"
@@ -229,7 +229,7 @@ module Arkenstone
         current_klass_name    = namespace.pop.underscore.to_sym
 
         # Build join class needs
-        join_klass_name       = ([model_klass_name, current_klass_name].sort).join('_')
+        join_klass_name       = [model_klass_name, current_klass_name].sort.join('_')
         join_klass_classified = join_klass_name.classify.to_sym
         join_klass_pluralized = join_klass_name.pluralize
         namespace             = Kernel.const_get(namespace.join('::'))
@@ -264,37 +264,35 @@ module Arkenstone
 
           # Check for cached joined instances
           cached_instances = current_klass_instance.send cached_instances_field
-          if cached_instances
-            return cached_instances
-          else
-            # Get from joined instances
-            model_klass_instances = send("cached_#{join_klass_pluralized}".to_sym).map(&:"#{model_klass_pluralized}")
+          return cached_instances if cached_instances
 
-            # Redefine `<<` so that you can something like `beer.tags << new_tag`
-            model_klass_instances.define_singleton_method :<< do |element|
-              # Use built in `push` for `Array.new`
-              push element
+          # Get from joined instances
+          model_klass_instances = send("cached_#{join_klass_pluralized}".to_sym).map(&:"#{model_klass_pluralized}")
 
-              # Cache the result
-              current_klass_instance.send "#{cached_instances_field}=", self
+          # Redefine `<<` so that you can something like `beer.tags << new_tag`
+          model_klass_instances.define_singleton_method :<< do |element|
+            # Use built in `push` for `Array.new`
+            push element
 
-              # Add the current class instance in the other side of the join
-              # The equivelant of doing `beer.tags << tag` then `tag.beers << beer`
-              #
-              # Grab the current_klass_instances from element
-              element_current_klass_instances = element.send(current_klass_pluralized)
+            # Cache the result
+            current_klass_instance.send "#{cached_instances_field}=", self
 
-              # Push the current_klass_instance to what element currently has
-              element_current_klass_instances.push(current_klass_instance)
+            # Add the current class instance in the other side of the join
+            # The equivelant of doing `beer.tags << tag` then `tag.beers << beer`
+            #
+            # Grab the current_klass_instances from element
+            element_current_klass_instances = element.send(current_klass_pluralized)
 
-              # Save the new stack of current_klass_instances with element
-              element.send "#{current_klass_pluralized}=", element_current_klass_instances
+            # Push the current_klass_instance to what element currently has
+            element_current_klass_instances.push(current_klass_instance)
 
-              # Return the new array
-              return self
-            end
-            return model_klass_instances
+            # Save the new stack of current_klass_instances with element
+            element.send "#{current_klass_pluralized}=", element_current_klass_instances
+
+            # Return the new array
+            self
           end
+          model_klass_instances
         end
 
         # This creates a setter helper to set all joined instances on the

@@ -100,7 +100,8 @@ class QueryBuilderTest < Test::Unit::TestCase
         )
       )
     end
-    assert_equal '{"$include":["DocDataElement","Document"],"$or":[{"$and":[{"DocDataElement.Name":"AccountNumber"},{"Value":"123456"}]},{"$and":[{"DocDataElement.Name":"Zip"},{"Value":"55555"}]}]}', json
+    assert_equal '{"$include":["DocDataElement","Document"],"$or":[{"$and":[{"DocDataElement.Name":"AccountNumber"},{"Value":"123456"}]},{"$and":[{"DocDataElement.Name":"Zip"},{"Value":"55555"}]}]}',
+                 json
   end
 
   def test_query_not

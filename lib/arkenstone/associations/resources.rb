@@ -15,7 +15,8 @@ module Arkenstone
 
       module InstanceMethods
         ### Attaches singleton methods for has_many relationships
-        def attach_nested_has_many_resource_methods(nested_resources, nested_resource_name, nested_resource_class_name = nested_resource_name)
+        def attach_nested_has_many_resource_methods(nested_resources, nested_resource_name,
+                                                    nested_resource_class_name = nested_resource_name)
           parent_instance = self
           parent_instance.extend HasManyParentSingletonMethods
           parent_instance.add_resource_methods(nested_resource_name)
@@ -43,7 +44,7 @@ module Arkenstone
             end
 
             parent_instance.arkenstone_data[resource_name_pluralized.to_sym] = resources
-            return resources
+            resources
           end
         end
       end

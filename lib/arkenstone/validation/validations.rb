@@ -101,9 +101,7 @@ module Arkenstone
         type = options[:type]
         message = options[:message] || "must be type #{type}"
         val = send(attr)
-        unless val.nil?
-          message unless val.is_a? type
-        end
+        message if !val.nil? && !(val.is_a? type)
       end
 
       # Checks if the attribute conforms with the provided regular expression.

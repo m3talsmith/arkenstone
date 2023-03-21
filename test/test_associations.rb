@@ -176,7 +176,7 @@ class AssociationsTest < Test::Unit::TestCase
     stub_request(:post, "#{Foo::Bar.arkenstone_url}/").to_return(status: '200', body: { id: 1, freezer_id: 1 }.to_json)
 
     freezer = Foo::Freezer.create({ age: 30 })
-    bar     = Foo::Bar.create({ freezer: freezer })
+    bar     = Foo::Bar.create({ freezer: })
 
     stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200, body: freezer.to_json)
 
@@ -209,14 +209,22 @@ class AssociationsTest < Test::Unit::TestCase
        end
      )
 
-    stub_request(:post, "#{Foo::Freezer.arkenstone_url}/").to_return(status: '200', body: { id: 1, bar_ids: [] }.to_json)
-    stub_request(:post, "#{Foo::Bar.arkenstone_url}/").to_return(status: '200', body: { id: 1, freezer_ids: [1] }.to_json)
+    stub_request(:post, "#{Foo::Freezer.arkenstone_url}/").to_return(status: '200',
+                                                                     body: {
+                                                                       id: 1, bar_ids: []
+                                                                     }.to_json)
+    stub_request(:post, "#{Foo::Bar.arkenstone_url}/").to_return(status: '200',
+                                                                 body: {
+                                                                   id: 1, freezer_ids: [1]
+                                                                 }.to_json)
 
     freezer = Foo::Freezer.create({ age: 30 })
     bar     = Foo::Bar.create({ freezers: [freezer] })
 
-    stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200, body: freezer.merge({ bar_ids: [bar.id] }).to_json)
-    stub_request(:get, "#{Foo::Bar.arkenstone_url}/1").to_return(status: 200, body: bar.merge({ freezer_ids: [freezer.id] }).to_json)
+    stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200,
+                                                                     body: freezer.merge({ bar_ids: [bar.id] }).to_json)
+    stub_request(:get, "#{Foo::Bar.arkenstone_url}/1").to_return(status: 200,
+                                                                 body: bar.merge({ freezer_ids: [freezer.id] }).to_json)
 
     assert(bar.freezer_ids.include?(freezer.id))
     assert(freezer.bar_ids.include?(bar.id))
@@ -259,9 +267,12 @@ class AssociationsTest < Test::Unit::TestCase
     stub_request(:post, "#{Foo::Bar.arkenstone_url}/").to_return(status: '200', body: { id: 1, freezer_id: 1 }.to_json)
 
     freezer = Foo::Freezer.create({ age: 30 })
-    bar     = Foo::Bar.create({ freezer: freezer })
+    bar     = Foo::Bar.create({ freezer: })
 
-    stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200, body: { id: 1, age: 30, bars: [{ id: 1 }] }.to_json)
+    stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1").to_return(status: 200,
+                                                                     body: {
+                                                                       id: 1, age: 30, bars: [{ id: 1 }]
+                                                                     }.to_json)
     stub_request(:get, "#{Foo::Freezer.arkenstone_url}/1/bars").to_return(status: 200, body: [{ id: 1 }].to_json)
 
     freezer = Foo::Freezer.find(freezer.id)
@@ -287,7 +298,8 @@ class AssociationsTest < Test::Unit::TestCase
         has_many :tools, model_name: 'derps'
       end
     )
-    stub_request(:get, "#{Garage.arkenstone_url}/10/derps").to_return(body: [{ name: 'test' }, { name: 'other' }].to_json)
+    stub_request(:get,
+                 "#{Garage.arkenstone_url}/10/derps").to_return(body: [{ name: 'test' }, { name: 'other' }].to_json)
     g = Garage.new
     g.id = 10
     tools = g.tools

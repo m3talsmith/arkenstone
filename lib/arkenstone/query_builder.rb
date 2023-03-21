@@ -11,8 +11,8 @@ module Arkenstone
     end
 
     ### Main entry point for processing the DSL.
-    def build(&block)
-      result = instance_eval(&block)
+    def build(&)
+      result = instance_eval(&)
       result = flush.merge result unless @cache.empty?
       result.to_json
     end

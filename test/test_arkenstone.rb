@@ -137,13 +137,17 @@ class ArkenstoneTest < Test::Unit::TestCase
     user = User.build user_options.merge({ id: 1, bearded: false })
     assert(user.bearded != true)
 
-    stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1, bearded: true }).to_json)
+    stub_request(:put,
+                 "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1,
+                                                                                          bearded: true }).to_json)
     user.bearded = true
     user.save
 
     assert(user.bearded == true)
 
-    stub_request(:get, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1, bearded: true }).to_json)
+    stub_request(:get,
+                 "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1,
+                                                                                          bearded: true }).to_json)
     user = User.find(user.id)
     assert(user.bearded == true)
   end
@@ -184,7 +188,9 @@ class ArkenstoneTest < Test::Unit::TestCase
 
     user = User.create(user_options)
 
-    stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1, name: 'Jack Doe', age: 24 }).to_json)
+    stub_request(:put,
+                 "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1, name: 'Jack Doe',
+                                                                                          age: 24 }).to_json)
 
     result = user.update_attributes({ name: 'Jack Doe', age: 24 })
     assert(result != false)
@@ -219,12 +225,16 @@ class ArkenstoneTest < Test::Unit::TestCase
 
     user = User.create(user_options)
 
-    stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1, name: 'Jack Doe' }).to_json)
+    stub_request(:put,
+                 "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1,
+                                                                                          name: 'Jack Doe' }).to_json)
 
     user.update_attribute 'name', 'Jack Doe'
     assert(user.name == 'Jack Doe', 'Jack doe is not alive')
 
-    stub_request(:put, "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1, name: 'Jacked Doe' }).to_json)
+    stub_request(:put,
+                 "#{User.arkenstone_url}#{user.id}").to_return(body: user_options.merge({ id: 1,
+                                                                                          name: 'Jacked Doe' }).to_json)
     user.update_attribute :name, 'Jacked Doe'
     assert(user.name == 'Jacked Doe', 'Jack is not Jacked')
   end
@@ -331,11 +341,11 @@ class ArkenstoneTest < Test::Unit::TestCase
 end
 
 def build_user(id)
-  User.build user_options.merge({ id: id })
+  User.build user_options.merge({ id: })
 end
 
 def create_user(options, id)
-  stub_request(:post, User.arkenstone_url).to_return(body: options.merge({ id: id }).to_json)
+  stub_request(:post, User.arkenstone_url).to_return(body: options.merge({ id: }).to_json)
   User.build(options).save
 end
 

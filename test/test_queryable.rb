@@ -20,7 +20,9 @@ class QueryableTests < Test::Unit::TestCase
   def test_where_with_hash
     dummy_user1 = user_options(name: 'user 1')
     dummy_user2 = user_options(name: 'user 2')
-    stub_request(:post, "#{User.arkenstone_url}query").with(body: { name: 'user 1' }.to_json).to_return(body: [dummy_user1, dummy_user2].to_json)
+    stub_request(:post,
+                 "#{User.arkenstone_url}query").with(body: { name: 'user 1' }.to_json).to_return(body: [dummy_user1,
+                                                                                                        dummy_user2].to_json)
     results = User.where({ name: 'user 1' })
     assert(results.nil? == false)
     assert(results.first.instance_of?(User))
@@ -29,7 +31,9 @@ class QueryableTests < Test::Unit::TestCase
   def test_where_with_block
     dummy_user1 = user_options(name: 'user 1')
     dummy_user2 = user_options(name: 'user 2')
-    stub_request(:post, "#{User.arkenstone_url}query").with(body: { name: 'user 1' }).to_return(body: [dummy_user1, dummy_user2].to_json)
+    stub_request(:post,
+                 "#{User.arkenstone_url}query").with(body: { name: 'user 1' }).to_return(body: [dummy_user1,
+                                                                                                dummy_user2].to_json)
     results = User.where do
       {
         name: 'user 1'
